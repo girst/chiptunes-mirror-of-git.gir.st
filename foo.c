@@ -31,8 +31,8 @@ void g(void) {
 };
 
 int main(void) {
-	unsigned short n;
-	unsigned short s;
+	u8 n;
+	u8 s;
 	u8 acc;
 	//TODO: clear all vars/registers
 	for (;;) {
