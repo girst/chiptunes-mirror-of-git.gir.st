@@ -37,7 +37,10 @@ int main(void) {
 	//TODO: clear all vars/registers
 	for (;;) {
 		acc = 0;
-		n = (i2<<2 | i1>>6);
+		MOV	(n, i2)
+		LSL	(n)
+		LSL	(n)
+		n = (n | i1>>6);
 		s = (i3<<7 | i2>>1);
 
 		//voice 1:
