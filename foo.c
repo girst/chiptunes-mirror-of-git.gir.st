@@ -49,7 +49,13 @@ int main(void) {
 
 		//voice 2:
 		MOV	(x, s)
-		t = n ^ (i2<<3 | i1>>5);
+		#define tmp o
+		MOV	(o, i2)
+		LSL	(o)
+		LSL	(o)
+		LSL	(o)
+		#undef tmp
+		t = n ^ (o | i1>>5);
 		LDI	(o, 10)
 		RCALL	g();
 		ADD	(acc, t)
