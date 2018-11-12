@@ -58,7 +58,7 @@ int main(void) {
 		t >>= 5;
 		OR	(t, tmp)
 		#undef tmp
-		t = n ^ (o | t);
+		EOR	(t, n)
 		LDI	(o, 10)
 		RCALL	g();
 		ADD	(acc, t)
