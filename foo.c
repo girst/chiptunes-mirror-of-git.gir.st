@@ -7,7 +7,8 @@ int g(int i, u8 x, u8 t, u8 o) {
 	SUBI	(xxx, -51)
 	xxx = (i*xxx) >> o;
 	AND	(xxx, x)
-	return ((3 & xxx));
+	ANDI	(xxx, 3)
+	return xxx;
 };
 
 int main(void) {
