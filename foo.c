@@ -24,8 +24,8 @@ u8 g(int i, u8 x, u8 t, u8 o) {
 
 int main(void) {
 	int i;
-	int n;
-	int s;
+	unsigned short n;
+	unsigned short s;
 	u8 acc;
 	for (i = 0;; i++) {
 		acc = 0;
