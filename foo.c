@@ -26,11 +26,11 @@ u8 g(int i) {
 };
 
 int main(void) {
-	int i;
+	int i = 0;
 	unsigned short n;
 	unsigned short s;
 	u8 acc;
-	for (i = 0;; i++) {
+	for (;;) {
 		acc = 0;
 		n = i >> 14;
 		s = i >> 17;
@@ -59,6 +59,7 @@ int main(void) {
 		LDI	(o, 9)
 		acc += g(i);
 
+		i++;
 		putchar(acc<<4);
 	}
 }
