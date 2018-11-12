@@ -13,7 +13,8 @@ u8 i3;
 u8 x;
 u8 t;
 u8 o;
-u8 g(int i) {
+void g(int i) {
+	// g(i, x, t, o) -> t
 	u8 tmp;
 	ANDI	(t, 0x07)
 	MOV	(tmp, i2)
@@ -26,7 +27,7 @@ u8 g(int i) {
 	t = (i*t) >> o;
 	AND	(t, x)
 	ANDI	(t, 3)
-	return t;
+	RET
 };
 
 int main(void) {
@@ -43,25 +44,29 @@ int main(void) {
 		LDI	(x, 1)
 		MOV	(t, n)
 		LDI	(o, 12)
-		acc += g(i);
+		RCALL	g(i);
+		MOV	(acc, t)
 
 		//voice 2:
 		MOV	(x, s)
 		t = n ^ i >> 13;
 		LDI	(o, 10)
-		acc += g(i);
+		RCALL	g(i);
+		ADD	(acc, t)
 
 		//voice 3:
 		x = s / 3;
 		t = n + ((i >> 11) % 3);
 		LDI	(o, 10)
-		acc += g(i);
+		RCALL	g(i);
+		ADD	(acc, t)
 
 		//voice 4:
 		x = s / 5;
 		t = 8 + n - ((i >> 10) % 3);
 		LDI	(o, 9)
-		acc += g(i);
+		RCALL	g(i);
+		ADD	(acc, t)
 
 		putchar(acc<<4);
 		i++;
