@@ -50,7 +50,7 @@ int main(void) {
 
 		//voice 2:
 		MOV	(x, s)
-		t = n ^ i >> 13;
+		t = n ^ (i3<<11 | i2<<3 | i1>>5);
 		LDI	(o, 10)
 		RCALL	g(i);
 		ADD	(acc, t)
