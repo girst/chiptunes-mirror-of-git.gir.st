@@ -41,7 +41,9 @@ int main(void) {
 		LSL	(n)
 		#define tmp acc
 		MOV	(tmp, i1)
-		tmp >>= 6;
+		SWAP	(tmp)
+		ANDI	(tmp, 0x0f)
+		tmp >>= 2;
 		OR	(n, tmp)
 		#undef tmp
 		s = (i3<<7 | i2>>1);
