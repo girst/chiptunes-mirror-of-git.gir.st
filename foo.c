@@ -50,12 +50,15 @@ int main(void) {
 		//voice 2:
 		MOV	(x, s)
 		#define tmp o
-		MOV	(o, i2)
-		LSL	(o)
-		LSL	(o)
-		LSL	(o)
+		MOV	(tmp, i2)
+		LSL	(tmp)
+		LSL	(tmp)
+		LSL	(tmp)
+		MOV	(t, i1)
+		t >>= 5;
+		OR	(t, tmp)
 		#undef tmp
-		t = n ^ (o | i1>>5);
+		t = n ^ (o | t);
 		LDI	(o, 10)
 		RCALL	g();
 		ADD	(acc, t)
