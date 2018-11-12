@@ -2,7 +2,10 @@
 #include "fakeasm.h"
 typedef unsigned char u8;
 
-u8* data = "Qj}6jQ6%BY}6YB6%";
+u8 data[] = {   
+	0x84, 0x9d, 0xb0, 0x69, 0x9d, 0x84, 0x69, 0x58,
+	0x75, 0x8c, 0xb0, 0x69, 0x8c, 0x75, 0x69, 0x58
+};
 u8 g(int i, u8 x, u8 t, u8 o) {
 	u8 tmp;
 	ANDI	(t, 0x07)
@@ -13,7 +16,6 @@ u8 g(int i, u8 x, u8 t, u8 o) {
 	SUBI	(t, -8)
 	skip:
 	t = data[t];
-	SUBI	(t, -51)
 	t = (i*t) >> o;
 	AND	(t, x)
 	ANDI	(t, 3)
