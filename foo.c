@@ -39,7 +39,11 @@ int main(void) {
 		MOV	(n, i2)
 		LSL	(n)
 		LSL	(n)
-		n = (n | i1>>6);
+		#define tmp acc
+		MOV	(tmp, i1)
+		tmp >>= 6;
+		n = (n | tmp);
+		#undef tmp
 		s = (i3<<7 | i2>>1);
 
 		//voice 1:
