@@ -36,7 +36,6 @@ int main(void) {
 	u8 acc;
 	//TODO: clear all vars/registers
 	for (;;) {
-		acc = 0;
 		MOV	(n, i2)
 		LSL	(n)
 		LSL	(n)
