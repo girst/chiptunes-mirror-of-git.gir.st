@@ -1,6 +1,6 @@
 #include <stdio.h>
 typedef unsigned char u8;
-int g(int i, int x, int t, int o) {
+int g(int i, u8 x, u8 t, u8 o) {
 	return ((3 & x & (i * ((3 & i >> 16 ? "BY}6YB6%" : "Qj}6jQ6%")[t % 8] + 51) >> o)));
 };
 
