@@ -6,12 +6,12 @@ u8* data = "Qj}6jQ6%BY}6YB6%";
 int g(int i, u8 x, u8 t, u8 o) {
 	ANDI	(t, 0x07)
 	if (3 & i >> 16 ) t+=8;
-	u8 xxx = data[t];
-	SUBI	(xxx, -51)
-	xxx = (i*xxx) >> o;
-	AND	(xxx, x)
-	ANDI	(xxx, 3)
-	return xxx;
+	t = data[t];
+	SUBI	(t, -51)
+	t = (i*t) >> o;
+	AND	(t, x)
+	ANDI	(t, 3)
+	return t;
 };
 
 int main(void) {
