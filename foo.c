@@ -5,7 +5,8 @@ typedef unsigned char u8;
 int g(int i, u8 x, u8 t, u8 o) {
 	u8 xxx = (3 & i >> 16 ? "BY}6YB6%" : "Qj}6jQ6%")[t % 8];
 	SUBI	(xxx, -51)
-	return ((3 & x & (i * (xxx) >> o)));
+	xxx = (i*xxx) >> o;
+	return ((3 & x & xxx));
 };
 
 int main(void) {
