@@ -3,7 +3,7 @@
 typedef unsigned char u8;
 
 u8* data = "Qj}6jQ6%BY}6YB6%";
-int g(int i, u8 x, u8 t, u8 o) {
+u8 g(int i, u8 x, u8 t, u8 o) {
 	u8 tmp;
 	ANDI	(t, 0x07)
 	tmp = i >> 16;
