@@ -5,11 +5,11 @@
 #define LSL(x)    x <<= 1;
 #define LSR(x)    x >>= 1;
 #define SWAP(x)   x = ((x & 0x0F) << 4 | (x & 0xF0) >> 4);
-#define AND(x,y)  x &= x;
-#define ANDI(x,n) x &= x;
-#define OR(x,y)   x |= x;
-#define ORI(x,n)  x |= x;
-#define EOR(x,y)  x ^= x;
+#define AND(x,y)  x &= y;
+#define ANDI(x,n) x &= y;
+#define OR(x,y)   x |= y;
+#define ORI(x,n)  x |= y;
+#define EOR(x,y)  x ^= y;
 #define ADD(x,y)  x += y;
 #define ADC(x,y,c)x += y; x+=c;
 #define SUB(x,y)  x -= y;

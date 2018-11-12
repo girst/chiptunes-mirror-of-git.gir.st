@@ -6,7 +6,8 @@ int g(int i, u8 x, u8 t, u8 o) {
 	u8 xxx = (3 & i >> 16 ? "BY}6YB6%" : "Qj}6jQ6%")[t % 8];
 	SUBI	(xxx, -51)
 	xxx = (i*xxx) >> o;
-	return ((3 & x & xxx));
+	xxx = xxx & x;
+	return ((3 & xxx));
 };
 
 int main(void) {
