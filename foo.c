@@ -55,7 +55,9 @@ int main(void) {
 		LSL	(tmp)
 		LSL	(tmp)
 		MOV	(t, i1)
-		t >>= 5;
+		SWAP	(t)
+		ANDI	(t, 0xf)
+		LSR	(t)
 		OR	(t, tmp)
 		#undef tmp
 		EOR	(t, n)
