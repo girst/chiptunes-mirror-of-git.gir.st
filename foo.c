@@ -35,6 +35,7 @@ int main(void) {
 	unsigned short n;
 	unsigned short s;
 	u8 acc;
+	//TODO: clear all vars/registers
 	for (;;) {
 		acc = 0;
 		n = i >> 14;
@@ -70,9 +71,11 @@ int main(void) {
 
 		putchar(acc<<4);
 		i++;
-		i0 = i;
-		i1 = i>>8;
-		i2 = i>>16;
-		i3 = i>>24;
+		#define tmp acc
+		LDI	(tmp, 0)
+		SUBI	(i0, -1)
+		ADC	(i1, tmp, !i0)
+		ADC	(i2, tmp, !i0&&!i1)
+		ADC	(i3, tmp, !i0&&!i1&&!i2)
 	}
 }
