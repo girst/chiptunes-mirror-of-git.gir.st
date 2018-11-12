@@ -38,7 +38,7 @@ int main(void) {
 	//TODO: clear all vars/registers
 	for (;;) {
 		acc = 0;
-		n = i >> 14;
+		n = (i3<<10 | i2<<2 | i1>>6);
 		s = i >> 17;
 
 		//voice 1:
