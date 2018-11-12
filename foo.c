@@ -75,5 +75,6 @@ int main(void) {
 		ADC	(i1, tmp, !i0)
 		ADC	(i2, tmp, !i0&&!i1)
 		ADC	(i3, tmp, !i0&&!i1&&!i2)
+		#undef tmp
 	}
 }
