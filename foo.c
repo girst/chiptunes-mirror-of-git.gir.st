@@ -2,8 +2,11 @@
 #include "fakeasm.h"
 typedef unsigned char u8;
 
+u8* data = "Qj}6jQ6%BY}6YB6%";
 int g(int i, u8 x, u8 t, u8 o) {
-	u8 xxx = (3 & i >> 16 ? "BY}6YB6%" : "Qj}6jQ6%")[t & 0x7];
+	t = t & 0x7;
+	if (3 & i >> 16 ) t+=8;
+	u8 xxx = data[t];
 	SUBI	(xxx, -51)
 	xxx = (i*xxx) >> o;
 	AND	(xxx, x)
