@@ -42,7 +42,7 @@ int main(void) {
 		#define tmp acc
 		MOV	(tmp, i1)
 		tmp >>= 6;
-		n = (n | tmp);
+		OR	(n, tmp)
 		#undef tmp
 		s = (i3<<7 | i2>>1);
 
