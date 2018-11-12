@@ -4,7 +4,7 @@ typedef unsigned char u8;
 
 u8* data = "Qj}6jQ6%BY}6YB6%";
 int g(int i, u8 x, u8 t, u8 o) {
-	t = t & 0x7;
+	ANDI	(t, 0x07)
 	if (3 & i >> 16 ) t+=8;
 	u8 xxx = data[t];
 	SUBI	(xxx, -51)
