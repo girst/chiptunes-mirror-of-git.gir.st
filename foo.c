@@ -39,7 +39,7 @@ int main(void) {
 	for (;;) {
 		acc = 0;
 		n = (i2<<2 | i1>>6);
-		s = i >> 17;
+		s = (i3<<7 | i2>>1);
 
 		//voice 1:
 		LDI	(x, 1)
