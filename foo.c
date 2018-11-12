@@ -16,7 +16,7 @@ u8 o;
 u8 g(int i) {
 	u8 tmp;
 	ANDI	(t, 0x07)
-	tmp = i2;
+	MOV	(tmp, i2)
 	ANDI	(tmp, 3)
 	TST	(tmp)
 	BREQ	(skip)
