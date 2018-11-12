@@ -6,13 +6,17 @@ u8 data[] = {
 	0x84, 0x9d, 0xb0, 0x69, 0x9d, 0x84, 0x69, 0x58,
 	0x75, 0x8c, 0xb0, 0x69, 0x8c, 0x75, 0x69, 0x58
 };
+u8 i0;
+u8 i1;
+u8 i2;
+u8 i3;
 u8 x;
 u8 t;
 u8 o;
 u8 g(int i) {
 	u8 tmp;
 	ANDI	(t, 0x07)
-	tmp = i >> 16;
+	tmp = i2;
 	ANDI	(tmp, 3)
 	TST	(tmp)
 	BREQ	(skip)
@@ -59,7 +63,11 @@ int main(void) {
 		LDI	(o, 9)
 		acc += g(i);
 
-		i++;
 		putchar(acc<<4);
+		i++;
+		i0 = i;
+		i1 = i>>8;
+		i2 = i>>16;
+		i3 = i>>24;
 	}
 }
