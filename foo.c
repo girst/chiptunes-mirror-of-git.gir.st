@@ -4,8 +4,11 @@ typedef unsigned char u8;
 
 u8* data = "Qj}6jQ6%BY}6YB6%";
 int g(int i, u8 x, u8 t, u8 o) {
+	u8 tmp;
 	ANDI	(t, 0x07)
-	if (3 & i >> 16 ) t+=8;
+	tmp = i >> 16;
+	ANDI	(tmp, 3)
+	if (tmp) t+=8;
 	t = data[t];
 	SUBI	(t, -51)
 	t = (i*t) >> o;
