@@ -58,6 +58,7 @@ int main(void) {
 		t = 8 + n - ((i >> 10) % 3);
 		LDI	(o, 9)
 		acc += g(i);
+
 		putchar(acc<<4);
 	}
 }
