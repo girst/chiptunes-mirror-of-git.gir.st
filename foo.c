@@ -8,7 +8,10 @@ u8 g(int i, u8 x, u8 t, u8 o) {
 	ANDI	(t, 0x07)
 	tmp = i >> 16;
 	ANDI	(tmp, 3)
-	if (tmp) t+=8;
+	TST	(tmp)
+	BREQ	(skip)
+	SUBI	(t, -8)
+	skip:
 	t = data[t];
 	SUBI	(t, -51)
 	t = (i*t) >> o;
