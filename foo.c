@@ -33,7 +33,8 @@ void mod3(void) { //avail: t, o _
 	MOV	(tmp, Ml)
 	LSR	(tmp)
 	LSR	(tmp)
-    Ml = (tmp) + (Ml & 0x3);
+	ANDI	(Ml, 0x03)
+    Ml = (tmp) + (Ml);
     Ml = (Ml >>  2) + (Ml & 0x3);
     if (Ml > 2) Ml = Ml - 3;
     #undef tmp
