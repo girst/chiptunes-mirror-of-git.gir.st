@@ -20,13 +20,15 @@ u8 _;
 void mod3(void) { //avail: t, o _
 //http://homepage.divms.uiowa.edu/~jones/bcd/mod.shtml
     #define tmp _
-    //unsigned short a = ((Mh) + (Ml)) ;//&0x1ff;
-    //    Mh = a>>8; //1 bit
-    //    Ml = a;
 	ADD	(Ml, Mh)
 	CLR	(Mh)
-	ADC	(Mh, zero, carry)
-    Ml = (Mh<<4|Ml>>4) + (Ml & 0xF);
+	ADC	(Mh, zero, carry) //Mh only holds the carry bit
+	MOV	(tmp, Ml)
+	SWAP	(tmp)
+	ANDI	(tmp, 0x0f)
+	SWAP	(Mh)
+	OR	(tmp, Mh)
+    Ml = (tmp) + (Ml & 0xF);
     Ml = (Ml >>  2) + (Ml & 0x3);
     Ml = (Ml >>  2) + (Ml & 0x3);
     if (Ml > 2) Ml = Ml - 3;
