@@ -6,6 +6,7 @@ u8 data[] = {
 	0x84, 0x9d, 0xb0, 0x69, 0x9d, 0x84, 0x69, 0x58,
 	0x75, 0x8c, 0xb0, 0x69, 0x8c, 0x75, 0x69, 0x58
 };
+u8 zero;
 u8 i0;
 u8 i1;
 u8 i2;
@@ -13,18 +14,26 @@ u8 i3;
 u8 x;
 u8 t;
 u8 o;
+u8 _;
 void g(void) {
 	// g(i, x, t, o) -> t
-	u8 tmp;
+	#define tmp _
 	ANDI	(t, 0x07)
 	MOV	(tmp, i2)
 	ANDI	(tmp, 3)
 	TST	(tmp)
+	#undef tmp
 	BREQ	(skip)
 	SUBI	(t, -8)
 	skip:
 	t = data[t];
-	t = (((i1&0x1f)<<8|i0)*t)>>8 >> o;
+	/*MOV X_hi==_, data_hi
+	  MOV X_lo==t, data_lo
+	  ADD X_lo, t
+	  CLR zero
+	  ADC X_hi, zero
+	  LD  t, X         */
+	t = (((i1&0x1f)<<8|i0)*t)>>8 >> o; //TODO; NOTE: o == {1, 2, 4}
 	AND	(t, x)
 	ANDI	(t, 3)
 	RET
@@ -100,7 +109,7 @@ int main(void) {
 		LSR	(tmp)
                 MOV	(x, tmp)
 		#undef tmp
-		t = ((i3&0x01)<<13 | i2<<5 | i1>>3) % 3;
+		t = ((i3&0x01)<<13 | i2<<5 | i1>>3) % 3; //TODO
 		ADD	(t, n)
 		LDI	(o, 2)
 		RCALL	g();
@@ -124,7 +133,7 @@ int main(void) {
 		LSR	(tmp)
                 MOV	(x, tmp)
 		#undef tmp
-		t = ((i3&0x01)<<14 | i2<<6 | i1>>2) % 3;
+		t = ((i3&0x01)<<14 | i2<<6 | i1>>2) % 3; //TODO
 		SUB	(t, n)
 		NEG	(t)
 		SUBI	(t, -8)
