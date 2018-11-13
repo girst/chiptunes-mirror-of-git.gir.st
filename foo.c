@@ -100,7 +100,6 @@ int main(void) {
 		//voice 1:
 		MOV	(t, n)
 		RCALL	g();
-		LDI	(o, 4)
 		SWAP	(t)
 		ANDI	(t, 0x0f)
 		ANDI	(t, 1)
@@ -119,10 +118,10 @@ int main(void) {
 		OR	(t, tmp)
 		#undef tmp
 		EOR	(t, n)
-		LDI	(o, 2)
 		RCALL	g();
-	t >>= o; //NOTE: o == {1, 2, 4}
-	ANDI	(t, 3)
+		LSR	(t)
+		LSR	(t)
+		ANDI	(t, 3)
 		AND	(t, s)
 		ADD	(acc, t)
 
