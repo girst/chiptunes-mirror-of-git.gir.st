@@ -6,7 +6,7 @@ u8 data[] = {
 	0x84, 0x9d, 0xb0, 0x69, 0x9d, 0x84, 0x69, 0x58,
 	0x75, 0x8c, 0xb0, 0x69, 0x8c, 0x75, 0x69, 0x58
 };
-u8 zero;
+u8 zero; //zero register
 u8 i0;
 u8 i1;
 u8 i2;
@@ -30,7 +30,6 @@ void g(void) {
 	/*MOV X_hi==_, data_hi
 	  MOV X_lo==t, data_lo
 	  ADD X_lo, t
-	  CLR zero
 	  ADC X_hi, zero
 	  LD  t, X         */
 	t = (((i1&0x1f)<<8|i0)*t)>>8; //TODO
@@ -142,13 +141,10 @@ int main(void) {
 		RCALL	g();
 		ADD	(acc, t)
 
-		putchar(acc<<4);
-		#define tmp acc
-		CLR	(tmp) //NOTE: maybe use dedicated zero register?
+		putchar(acc<<4); //TODO
 		SUBI	(i0, -1)
-		ADC	(i1, tmp, !i0)
-		ADC	(i2, tmp, !i0&&!i1)
-		ADC	(i3, tmp, !i0&&!i1&&!i2)
-		#undef tmp
+		ADC	(i1, zero, !i0)
+		ADC	(i2, zero, !i0&&!i1)
+		ADC	(i3, zero, !i0&&!i1&&!i2)
 	}
 }
