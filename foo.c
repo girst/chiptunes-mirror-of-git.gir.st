@@ -107,7 +107,19 @@ int main(void) {
 		MOV	(x, s)
 		INC	(x)
 		#define tmp o
-		x = (x*0x33)>>8;
+                sum = 0;
+                for(int loop = 0; loop < 2; loop ++) {
+                sum >>= 1;
+                sum += x;
+                sum >>= 1;
+                sum += x;
+                sum >>= 1;
+                //nop
+                sum >>= 1;
+                //nop
+                }
+                sum >>= 1;
+                x = sum;
 		#undef tmp
 		t = ((i3&0x01)<<14 | i2<<6 | i1>>2) % 3;
 		SUB	(t, n)
