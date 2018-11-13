@@ -87,7 +87,7 @@ int main(void) {
 		INC	(x)
 		#define tmp o
 		MOV	(tmp, x)
-		ROR	(tmp)
+		LSR	(tmp) //don't rely on carry empty after mov | ror only after add
 		LSR	(tmp)
 		ADD	(tmp, x)
 		ROR	(tmp)
@@ -110,24 +110,23 @@ int main(void) {
 		MOV	(x, s)
 		INC	(x)
 		#define tmp o
-                unsigned short sum = 0; //XXX
-                sum += x;
-                sum >>= 1;
-                sum += x;
-                sum >>= 1;
+                MOV	(tmp, x)
+		LSR	(tmp)
+                ADD	(tmp, x)
+		ROR	(tmp)
                 //nop
-                sum >>= 1;
+		LSR	(tmp)
                 //nop
-                sum >>= 1;
-                sum += x;
-                sum >>= 1;
-                sum += x;
-                sum >>= 1;
+		LSR	(tmp)
+                ADD	(tmp, x)
+		ROR	(tmp)
+                ADD	(tmp, x)
+		ROR	(tmp)
                 //nop
-                sum >>= 1;
+		LSR	(tmp)
                 //nop
-                sum >>= 1;
-                x = sum;
+		LSR	(tmp)
+                x = tmp;
 		#undef tmp
 		t = ((i3&0x01)<<14 | i2<<6 | i1>>2) % 3;
 		SUB	(t, n)
