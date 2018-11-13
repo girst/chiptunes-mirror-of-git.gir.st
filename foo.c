@@ -43,7 +43,8 @@ int main(void) {
 		MOV	(tmp, i1)
 		SWAP	(tmp)
 		ANDI	(tmp, 0x0f)
-		tmp >>= 2;
+		LSR	(tmp)
+		LSR	(tmp)
 		OR	(n, tmp)
 		#undef tmp
 		s = (i3<<7 | i2>>1);
