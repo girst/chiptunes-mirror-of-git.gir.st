@@ -88,7 +88,8 @@ int main(void) {
 		#define tmp o
 		x = (x*0x55)>>8;
 		#undef tmp
-		t = n + (((i3&0x01)<<13 | i2<<5 | i1>>3) % 3);
+		t = ((i3&0x01)<<13 | i2<<5 | i1>>3) % 3;
+		ADD	(t, n)
 		LDI	(o, 10)
 		RCALL	g();
 		ADD	(acc, t)
