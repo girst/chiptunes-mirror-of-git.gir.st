@@ -11,9 +11,12 @@ u8 i0;
 u8 i1;
 u8 i2;
 u8 i3;
-u8 t;  //implicitly cleared by mov t,n
-u8 x;  //implicitly cleared by mov x,s
-u8 _;  //implicitly cleared by mov tmp,*
+u8 n;
+u8 s;
+u8 acc;
+u8 t;
+u8 x;
+u8 _;
 #define Mh x //mod3 vars
 #define Ml t // -"-
 //http://homepage.divms.uiowa.edu/~jones/bcd/mod.shtml
@@ -70,10 +73,11 @@ void g(void) {
 };
 
 int main(void) {
-	u8 n;  //implicitly cleared by mov n,i2
-	u8 s;  //implicitly cleared by mov s,i3
-	u8 acc;//implicitly cleared by mov acc,t
-	//TODO: clear i0, i1, i2, i3, zero registers
+	CLR	(zero)
+	CLR	(i0)
+	CLR	(i1)
+	CLR	(i2)
+	CLR	(i3)
 	for (;;) {
 		MOV	(n, i2)
 		LSL	(n)
