@@ -47,12 +47,14 @@ int main(void) {
 		LSR	(tmp)
 		OR	(n, tmp)
 		#undef tmp
-		#define tmp acc
 		MOV	(s, i3)
 		ROR	(s)
 		ROR	(s)
 		ANDI	(s, 0x80)
-		s = (s | i2>>1);
+		#define tmp acc
+		MOV	(tmp, i2)
+		LSR	(tmp)
+		s = (s | tmp);
 		#undef tmp
 
 		//voice 1:
