@@ -99,10 +99,10 @@ int main(void) {
 
 		//voice 1:
 		MOV	(t, n)
-		LDI	(o, 4)
 		RCALL	g();
-	t >>= o; //NOTE: o == {1, 2, 4}
-	ANDI	(t, 3)
+		LDI	(o, 4)
+		SWAP	(t)
+		ANDI	(t, 0x0f)
 		ANDI	(t, 1)
 		MOV	(acc, t)
 
