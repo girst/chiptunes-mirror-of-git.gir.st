@@ -171,23 +171,6 @@ int main(void) {
 		ADD	(acc, t)
 
 		//voice 4:
-		MOV	(x, s)
-		INC	(x)
-		#define tmp o
-                MOV	(tmp, x)
-		LSR	(tmp)
-                ADD	(tmp, x)
-		ROR	(tmp)
-		LSR	(tmp)
-		LSR	(tmp)
-                ADD	(tmp, x)
-		ROR	(tmp)
-                ADD	(tmp, x)
-		ROR	(tmp)
-		LSR	(tmp)
-		LSR	(tmp)
-                MOV	(x, tmp)
-		#undef tmp
 		MOV	(Ml, i2)
 		SWAP	(Ml)
 		ANDI	(Ml, 0xf0)
@@ -216,6 +199,23 @@ int main(void) {
 		SUBI	(t, -8)
 		LDI	(o, 1)
 		RCALL	g();
+		MOV	(x, s)
+		INC	(x)
+		#define tmp o
+                MOV	(tmp, x)
+		LSR	(tmp)
+                ADD	(tmp, x)
+		ROR	(tmp)
+		LSR	(tmp)
+		LSR	(tmp)
+                ADD	(tmp, x)
+		ROR	(tmp)
+                ADD	(tmp, x)
+		ROR	(tmp)
+		LSR	(tmp)
+		LSR	(tmp)
+                MOV	(x, tmp)
+		#undef tmp
 		AND	(t, x)
 		ADD	(acc, t)
 
