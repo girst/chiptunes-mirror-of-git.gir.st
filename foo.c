@@ -11,8 +11,8 @@ u8 i0;
 u8 i1;
 u8 i2;
 u8 i3;
-u8 x;
 u8 t;
+u8 x;
 u8 _;
 #define Mh x //mod3 vars
 #define Ml t // -"-
@@ -66,7 +66,7 @@ void g(void) {
 	  ADC X_hi, zero
 	  LD  t, X         */
 	t = (((i1&0x1f)<<8|i0)*t)>>8; //TODO
-	RET //TODO: CALL/RET is expensive; store PC in register and RJMP, then JRMP back
+	RET //TODO: CALL/RET is expensive; store next-instruction-position in Z register and RJMP, then JRMP back (maybe unnecessary, since timer might need stack anyways)
 };
 
 int main(void) {
