@@ -49,7 +49,7 @@ void mod3(void) {
 	#undef tmp
 }
 void g(void) {
-	// g(i, t, o) -> t
+	// g(i, t) -> t
 	// tempvars: `x` and `_`
 	#define tmp _
 	ANDI	(t, 0x07)
@@ -67,8 +67,6 @@ void g(void) {
 	  ADC X_hi, zero
 	  LD  t, X         */
 	t = (((i1&0x1f)<<8|i0)*t)>>8; //TODO
-	t >>= o; //NOTE: o == {1, 2, 4}
-	ANDI	(t, 3)
 	RET //TODO: CALL/RET is expensive; store PC in register and RJMP, then JRMP back
 };
 
@@ -103,6 +101,8 @@ int main(void) {
 		MOV	(t, n)
 		LDI	(o, 4)
 		RCALL	g();
+	t >>= o; //NOTE: o == {1, 2, 4}
+	ANDI	(t, 3)
 		ANDI	(t, 1)
 		MOV	(acc, t)
 
@@ -121,6 +121,8 @@ int main(void) {
 		EOR	(t, n)
 		LDI	(o, 2)
 		RCALL	g();
+	t >>= o; //NOTE: o == {1, 2, 4}
+	ANDI	(t, 3)
 		AND	(t, s)
 		ADD	(acc, t)
 
@@ -151,6 +153,8 @@ int main(void) {
 		ADD	(t, n)
 		LDI	(o, 2)
 		RCALL	g();
+	t >>= o; //NOTE: o == {1, 2, 4}
+	ANDI	(t, 3)
 		MOV	(x, s)
 		INC	(x)
 		#define tmp o
@@ -200,6 +204,8 @@ int main(void) {
 		SUBI	(t, -8)
 		LDI	(o, 1)
 		RCALL	g();
+	t >>= o; //NOTE: o == {1, 2, 4}
+	ANDI	(t, 3)
 		MOV	(x, s)
 		INC	(x)
 		#define tmp o
