@@ -54,7 +54,7 @@ int main(void) {
 		#define tmp acc
 		MOV	(tmp, i2)
 		LSR	(tmp)
-		s = (s | tmp);
+		OR	(s, tmp)
 		#undef tmp
 
 		//voice 1:
