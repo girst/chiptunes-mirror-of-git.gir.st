@@ -88,21 +88,17 @@ int main(void) {
 		#define tmp o
 		MOV	(tmp, x)
 		ROR	(tmp)
-                //nop
 		LSR	(tmp)
 		ADD	(tmp, x)
 		ROR	(tmp)
-                //nop
 		LSR	(tmp)
 		ADD	(tmp, x)
 		ROR	(tmp)
-                //nop
 		LSR	(tmp)
 		ADD	(tmp, x)
 		ROR	(tmp)
-                //nop
 		LSR	(tmp)
-                x = tmp;
+                MOV	(x, tmp)
 		#undef tmp
 		t = ((i3&0x01)<<13 | i2<<5 | i1>>3) % 3;
 		ADD	(t, n)
