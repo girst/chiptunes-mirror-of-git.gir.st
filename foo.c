@@ -87,7 +87,6 @@ int main(void) {
 		INC	(x)
 		#define tmp o
                 unsigned short sum = 0; //XXX
-                sum >>= 1;
                 sum += x;
                 sum >>= 1;
                 //nop
@@ -117,7 +116,6 @@ int main(void) {
 		INC	(x)
 		#define tmp o
                 sum = 0; //XXX
-                sum >>= 1;
                 sum += x;
                 sum >>= 1;
                 sum += x;
