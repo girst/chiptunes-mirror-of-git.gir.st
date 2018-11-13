@@ -86,7 +86,16 @@ int main(void) {
 		MOV	(x, s)
 		INC	(x)
 		#define tmp o
-		x = (x*0x55)>>8;
+                unsigned short sum = 0;
+                for(int loop = 0; loop < 4; loop ++) {
+                sum >>= 1;
+                sum += x;
+                sum >>= 1;
+                //nop
+                }
+                sum >>= 1;
+                x = sum;
+
 		#undef tmp
 		t = ((i3&0x01)<<13 | i2<<5 | i1>>3) % 3;
 		ADD	(t, n)
