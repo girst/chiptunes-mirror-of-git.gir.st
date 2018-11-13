@@ -43,7 +43,7 @@ void mod3(void) {
 	ADD	(Ml, tmp)
 	CPI	(Ml, 3)
 	BRPL	(skip)
-	Ml = Ml - 3; //TODO
+	SUBI	(Ml, 3)
 	skip:;
 	#undef tmp
 }
