@@ -86,10 +86,7 @@ int main(void) {
 		MOV	(x, s)
 		INC	(x)
 		#define tmp o
-		//NOTE: we only need 1 bit of the upper byte. instead of using a u16 and LSR'ing, 
-		//we can use a u8 for sum and use ROR (which shifts the carry in)
-		CLR	(tmp)
-		ADD	(tmp, x)
+		MOV	(tmp, x)
 		ROR	(tmp)
                 //nop
 		LSR	(tmp)
