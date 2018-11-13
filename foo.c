@@ -13,7 +13,6 @@ u8 i2;
 u8 i3;
 u8 x;
 u8 t;
-u8 o;
 u8 _;
 #define Mh x //mod3 vars
 #define Ml t // -"-
