@@ -152,7 +152,17 @@ int main(void) {
 		LSR	(tmp)
 		OR	(Ml, tmp)
 		#undef tmp
-		Mh = i3<<5 | i2>>3;
+		MOV	(Mh, i3)
+		SWAP	(Mh)
+		ANDI	(Mh, 0xf0)
+		LSL	(Mh)
+		#define tmp _
+		MOV	(tmp, i2)
+		LSR	(tmp)
+		LSR	(tmp)
+		LSR	(tmp)
+		OR	(Mh, tmp)
+		#undef tmp
 		RCALL	mod3();
 		ADD	(t, n)
 		LDI	(o, 2)
