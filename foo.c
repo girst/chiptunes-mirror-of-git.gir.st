@@ -16,18 +16,16 @@ u8 t;
 u8 o;
 u8 _;
 #define Mh o //mod3 vars
-#define Ml _ // -"-
-#define Mr t // -"-
-u8 mod3(u8 hi, u8 lo) { //avail: t, o _
+#define Ml t // -"-
+void mod3(void) { //avail: t, o _
 //http://homepage.divms.uiowa.edu/~jones/bcd/mod.shtml
-    unsigned short a = ((hi) + (lo)) &0x1ff;
-        hi = a>>8; //1 bit
-        lo = a;
-    lo = (hi<<4|lo>>4) + (lo & 0xF);
-    lo = (lo >>  2) + (lo & 0x3);
-    lo = (lo >>  2) + (lo & 0x3);
-    if (lo > 2) lo = lo - 3;
-    return lo;
+    unsigned short a = ((Mh) + (Ml)) &0x1ff;
+        Mh = a>>8; //1 bit
+        Ml = a;
+    Ml = (Mh<<4|Ml>>4) + (Ml & 0xF);
+    Ml = (Ml >>  2) + (Ml & 0x3);
+    Ml = (Ml >>  2) + (Ml & 0x3);
+    if (Ml > 2) Ml = Ml - 3;
 }
 void g(void) {
 	// g(i, x, t, o) -> t
@@ -125,7 +123,7 @@ int main(void) {
 		#undef tmp
 		Ml = i2<<5 | i1>>3;
 		Mh = i3<<5 | i2>>3;
-		t = mod3(Mh,Ml); //TODO
+		RCALL	mod3();
 		ADD	(t, n)
 		LDI	(o, 2)
 		RCALL	g();
@@ -151,7 +149,7 @@ int main(void) {
 		#undef tmp
 		Ml = i2<<6 | i1>>2;
 		Mh = i3<<6 | i2>>2;
-		t = mod3(Mh,Ml); //TODO
+		RCALL	mod3();
 		SUB	(t, n)
 		NEG	(t)
 		SUBI	(t, -8)
