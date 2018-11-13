@@ -15,6 +15,20 @@ u8 x;
 u8 t;
 u8 o;
 u8 _;
+#define Mh o //mod3 vars
+#define Ml _ // -"-
+#define Mr t // -"-
+u8 mod3(u8 hi, u8 lo) { //avail: t, o _
+//http://homepage.divms.uiowa.edu/~jones/bcd/mod.shtml
+    unsigned short a = ((hi) + (lo)) &0x1ff;
+        hi = a>>8; //1 bit
+        lo = a;
+    lo = (hi<<4|lo>>4) + (lo & 0xF);
+    lo = (lo >>  2) + (lo & 0x3);
+    lo = (lo >>  2) + (lo & 0x3);
+    if (lo > 2) lo = lo - 3;
+    return lo;
+}
 void g(void) {
 	// g(i, x, t, o) -> t
 	#define tmp _
@@ -109,7 +123,9 @@ int main(void) {
 		LSR	(tmp)
                 MOV	(x, tmp)
 		#undef tmp
-		t = ((i3&0x01)<<13 | i2<<5 | i1>>3) % 3; //TODO
+		Ml = i2<<5 | i1>>3;
+		Mh = i3<<5 | i2>>3;
+		t = mod3(Mh,Ml); //TODO
 		ADD	(t, n)
 		LDI	(o, 2)
 		RCALL	g();
@@ -133,7 +149,9 @@ int main(void) {
 		LSR	(tmp)
                 MOV	(x, tmp)
 		#undef tmp
-		t = ((i3&0x01)<<14 | i2<<6 | i1>>2) % 3; //TODO
+		Ml = i2<<6 | i1>>2;
+		Mh = i3<<6 | i2>>2;
+		t = mod3(Mh,Ml); //TODO
 		SUB	(t, n)
 		NEG	(t)
 		SUBI	(t, -8)
