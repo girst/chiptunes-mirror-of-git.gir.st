@@ -6,17 +6,22 @@ u8 data[] = {
 	0x84, 0x9d, 0xb0, 0x69, 0x9d, 0x84, 0x69, 0x58,
 	0x75, 0x8c, 0xb0, 0x69, 0x8c, 0x75, 0x69, 0x58
 };
-u8 zero; //zero register
-u8 i0;
-u8 i1;
-u8 i2;
-u8 i3;
-u8 n;
-u8 s;
-u8 acc;
-u8 t;
-u8 x;
-u8 _;
+u8 zero;	//r16
+u8 acc;		//r17
+u8 i0;		//r18
+u8 i1;		//r19
+u8 i2;		//r20
+u8 i3;		//r21
+u8 n;		//r22
+u8 s;		//r23
+u8 _;		//r24
+		//r25
+u8 t;/*==Ml*/	//r26 (Xlo)
+u8 x;/*==Mh*/	//r27 (Xhi)
+		//r28
+		//r29
+/*fakestack_l*/	//r30 (Zlo)
+/*fakestack_h*/	//r31 (Zhi)
 #define Mh x //mod3 vars
 #define Ml t // -"-
 //http://homepage.divms.uiowa.edu/~jones/bcd/mod.shtml
