@@ -134,7 +134,7 @@ int main(void) {
 
 		putchar(acc<<4);
 		#define tmp acc
-		LDI	(tmp, 0)
+		CLR	(tmp) //NOTE: maybe use dedicated zero register?
 		SUBI	(i0, -1)
 		ADC	(i1, tmp, !i0)
 		ADC	(i2, tmp, !i0&&!i1)
