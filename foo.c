@@ -83,7 +83,9 @@ int main(void) {
 		ADD	(acc, t)
 
 		//voice 3:
-		x = s / 3;
+		MOV	(x, s)
+		INC	(x)
+		x = (x*0x55)>>8;
 		t = n + (((i3&0x01)<<13 | i2<<5 | i1>>3) % 3);
 		LDI	(o, 10)
 		RCALL	g();
