@@ -85,7 +85,9 @@ int main(void) {
 		//voice 3:
 		MOV	(x, s)
 		INC	(x)
+		#define tmp o
 		x = (x*0x55)>>8;
+		#undef tmp
 		t = n + (((i3&0x01)<<13 | i2<<5 | i1>>3) % 3);
 		LDI	(o, 10)
 		RCALL	g();
