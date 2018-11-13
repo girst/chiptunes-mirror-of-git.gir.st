@@ -60,7 +60,7 @@ void g(void) {
 	SUBI	(t, -8)
 	skip:
 	t = data[t];
-	/*MOV X_hi==_, data_hi
+	/*MOV X_hi==x, data_hi
 	  MOV X_lo==t, data_lo
 	  ADD X_lo, t
 	  ADC X_hi, zero
@@ -78,7 +78,7 @@ int main(void) {
 		MOV	(n, i2)
 		LSL	(n)
 		LSL	(n)
-		#define tmp acc
+		#define tmp _
 		MOV	(tmp, i1)
 		SWAP	(tmp)
 		ANDI	(tmp, 0x0f)
@@ -90,7 +90,7 @@ int main(void) {
 		ROR	(s)
 		ROR	(s)
 		ANDI	(s, 0x80)
-		#define tmp acc
+		#define tmp _
 		MOV	(tmp, i2)
 		LSR	(tmp)
 		OR	(s, tmp)
@@ -129,7 +129,7 @@ int main(void) {
 		SWAP	(Ml)
 		ANDI	(Ml, 0xf0)
 		LSL	(Ml)
-		#define tmp Mh
+		#define tmp _
 		MOV	(tmp, i1)
 		LSR	(tmp)
 		LSR	(tmp)
@@ -179,7 +179,7 @@ int main(void) {
 		ANDI	(Ml, 0xf0)
 		LSL	(Ml)
 		LSL	(Ml)
-		#define tmp Mh
+		#define tmp _
 		MOV	(tmp, i1)
 		LSR	(tmp)
 		LSR	(tmp)
