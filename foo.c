@@ -15,7 +15,7 @@ u8 x;
 u8 t;
 u8 o;
 u8 _;
-#define Mh o //mod3 vars
+#define Mh x //mod3 vars
 #define Ml t // -"-
 //http://homepage.divms.uiowa.edu/~jones/bcd/mod.shtml
 void mod3(void) {
@@ -106,7 +106,7 @@ int main(void) {
 		MOV	(acc, t)
 
 		//voice 2:
-		#define tmp o
+		#define tmp _
 		MOV	(tmp, i2)
 		LSL	(tmp)
 		LSL	(tmp)
@@ -156,7 +156,7 @@ int main(void) {
 		ANDI	(t, 3)
 		MOV	(x, s)
 		INC	(x)
-		#define tmp o
+		#define tmp _
 		MOV	(tmp, x)
 		LSR	(tmp)
 		LSR	(tmp)
@@ -206,7 +206,7 @@ int main(void) {
 		ANDI	(t, 3)
 		MOV	(x, s)
 		INC	(x)
-		#define tmp o
+		#define tmp _
                 MOV	(tmp, x)
 		LSR	(tmp)
                 ADD	(tmp, x)
