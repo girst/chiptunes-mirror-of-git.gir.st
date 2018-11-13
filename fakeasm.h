@@ -21,9 +21,9 @@
 #define CLR(x)    x = 0;
 #define RET       return;
 #define RCALL	  //pseudo
-int zero = 0; //status register zero bit
-#define TST(x)    if(x==0)zero=1;else zero=0; //WARN: not a complete TST mockup
-#define BREQ(l)   if(zero) goto l;
+int sr_zero = 0; //status register zero bit
+#define TST(x)    if(x==0)sr_zero=1;else sr_zero=0; //WARN: not a complete TST mockup
+#define BREQ(l)   if(sr_zero) goto l;
 int carry = 0; //status register carry bit //WARN: not respected by all mocked instructions
 int asmtmp = 0;
 #define ROL(x)	asmtmp = x>>7; x <<= 1; x |= carry; carry = asmtmp;

@@ -33,7 +33,8 @@ void g(void) {
 	  CLR zero
 	  ADC X_hi, zero
 	  LD  t, X         */
-	t = (((i1&0x1f)<<8|i0)*t)>>8 >> o; //TODO; NOTE: o == {1, 2, 4}
+	t = (((i1&0x1f)<<8|i0)*t)>>8; //TODO
+	t >>= o; //NOTE: o == {1, 2, 4}
 	AND	(t, x)
 	ANDI	(t, 3)
 	RET
