@@ -94,7 +94,11 @@ int main(void) {
 		ADD	(acc, t)
 
 		//voice 4:
-		x = s / 5;
+		MOV	(x, s)
+		INC	(x)
+		#define tmp o
+		x = (x*0x33)>>8;
+		#undef tmp
 		t = 8 + n - (((i3&0x01)<<14 | i2<<6 | i1>>2) % 3);
 		LDI	(o, 9)
 		RCALL	g();
