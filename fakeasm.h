@@ -24,3 +24,7 @@
 int zero = 0; //status register zero bit
 #define TST(x)    if(x==0)zero=1;else zero=0; //WARN: not a complete TST mockup
 #define BREQ(l)   if(zero) goto l;
+int carry = 0; //status register carry bit
+int asmtmp = 0;
+#define ROL(x)	asmtmp = x>>7; x <<= 1; x |= carry; carry = asmtmp;
+#define ROR(x)	asmtmp = x&0x1; x >>= 1; x |= carry<<7; carry = asmtmp;

@@ -47,7 +47,14 @@ int main(void) {
 		LSR	(tmp)
 		OR	(n, tmp)
 		#undef tmp
-		s = (i3<<7 | i2>>1);
+		#define tmp acc
+		MOV	(s, i3)
+		//ROR	(s)
+		//ROR	(s)
+		//ANDI	(s, 0x01)
+		s<<=7;
+		s = (s | i2>>1);
+		#undef tmp
 
 		//voice 1:
 		LDI	(x, 1)
