@@ -24,7 +24,7 @@ void g(void) {
 	SUBI	(t, -8)
 	skip:
 	t = data[t];
-	t = (((i1&0x1f)<<8|i0)*t) >> o;
+	t = (((i1&0x1f)<<8|i0)*t)>>8 >> o;
 	AND	(t, x)
 	ANDI	(t, 3)
 	RET
@@ -60,7 +60,7 @@ int main(void) {
 		//voice 1:
 		LDI	(x, 1)
 		MOV	(t, n)
-		LDI	(o, 12)
+		LDI	(o, 4)
 		RCALL	g();
 		MOV	(acc, t)
 
@@ -78,7 +78,7 @@ int main(void) {
 		OR	(t, tmp)
 		#undef tmp
 		EOR	(t, n)
-		LDI	(o, 10)
+		LDI	(o, 2)
 		RCALL	g();
 		ADD	(acc, t)
 
@@ -90,7 +90,7 @@ int main(void) {
 		#undef tmp
 		t = ((i3&0x01)<<13 | i2<<5 | i1>>3) % 3;
 		ADD	(t, n)
-		LDI	(o, 10)
+		LDI	(o, 2)
 		RCALL	g();
 		ADD	(acc, t)
 
@@ -104,7 +104,7 @@ int main(void) {
 		SUB	(t, n)
 		NEG	(t)
 		SUBI	(t, -8)
-		LDI	(o, 9)
+		LDI	(o, 1)
 		RCALL	g();
 		ADD	(acc, t)
 
