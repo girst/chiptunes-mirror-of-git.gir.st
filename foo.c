@@ -17,9 +17,10 @@ u8 o;
 u8 _;
 #define Mh o //mod3 vars
 #define Ml t // -"-
-void mod3(void) { //avail: t, o _
 //http://homepage.divms.uiowa.edu/~jones/bcd/mod.shtml
-    #define tmp _
+void mod3(void) {
+	// mod3(Mh.Ml) -> t
+	#define tmp _
 	ADD	(Ml, Mh)
 	CLR	(Mh)
 	ADC	(Mh, zero, carry) //Mh only holds the carry bit
@@ -40,8 +41,8 @@ void mod3(void) { //avail: t, o _
 	LSR	(tmp)
 	ANDI	(Ml, 0x03)
 	ADD	(Ml, tmp)
-    if (Ml > 2) Ml = Ml - 3;
-    #undef tmp
+	if (Ml > 2) Ml = Ml - 3; //TODO
+	#undef tmp
 }
 void g(void) {
 	// g(i, x, t, o) -> t
