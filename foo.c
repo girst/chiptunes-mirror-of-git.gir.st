@@ -11,9 +11,9 @@ u8 i0;
 u8 i1;
 u8 i2;
 u8 i3;
-u8 t;
-u8 x;
-u8 _;
+u8 t;  //implicitly cleared by mov t,n
+u8 x;  //implicitly cleared by mov x,s
+u8 _;  //implicitly cleared by mov tmp,*
 #define Mh x //mod3 vars
 #define Ml t // -"-
 //http://homepage.divms.uiowa.edu/~jones/bcd/mod.shtml
@@ -66,14 +66,14 @@ void g(void) {
 	  ADC X_hi, zero
 	  LD  t, X         */
 	t = (((i1&0x1f)<<8|i0)*t)>>8; //TODO
-	RET //TODO: CALL/RET is expensive; store next-instruction-position in Z register and RJMP, then JRMP back (maybe unnecessary, since timer might need stack anyways)
+	RET //TODO: replace CALL/RET with IJMP?
 };
 
 int main(void) {
-	u8 n;
-	u8 s;
-	u8 acc;
-	//TODO: clear all vars/registers
+	u8 n;  //implicitly cleared by mov n,i2
+	u8 s;  //implicitly cleared by mov s,i3
+	u8 acc;//implicitly cleared by mov acc,t
+	//TODO: clear i0, i1, i2, i3, zero registers
 	for (;;) {
 		MOV	(n, i2)
 		LSL	(n)
