@@ -49,7 +49,8 @@ void mod3(void) {
 	#undef tmp
 }
 void g(void) {
-	// g(i, x, t, o) -> t
+	// g(i, t, o) -> t
+	// tempvars: `x` and `_`
 	#define tmp _
 	ANDI	(t, 0x07)
 	MOV	(tmp, i2)
