@@ -114,19 +114,15 @@ int main(void) {
 		LSR	(tmp)
                 ADD	(tmp, x)
 		ROR	(tmp)
-                //nop
 		LSR	(tmp)
-                //nop
 		LSR	(tmp)
                 ADD	(tmp, x)
 		ROR	(tmp)
                 ADD	(tmp, x)
 		ROR	(tmp)
-                //nop
 		LSR	(tmp)
-                //nop
 		LSR	(tmp)
-                x = tmp;
+                MOV	(x, tmp)
 		#undef tmp
 		t = ((i3&0x01)<<14 | i2<<6 | i1>>2) % 3;
 		SUB	(t, n)
