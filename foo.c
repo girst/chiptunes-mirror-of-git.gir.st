@@ -45,6 +45,7 @@ void mod3(void) {
 	BRPL	(skip)
 	SUBI	(Ml, 3)
 	skip:;
+	RET
 	#undef tmp
 }
 void g(void) {
@@ -68,7 +69,7 @@ void g(void) {
 	t >>= o; //NOTE: o == {1, 2, 4}
 	AND	(t, x)
 	ANDI	(t, 3)
-	RET
+	RET //TODO: CALL/RET is expensive; store PC in register and RJMP, then JRMP back
 };
 
 int main(void) {
