@@ -49,10 +49,9 @@ int main(void) {
 		#undef tmp
 		#define tmp acc
 		MOV	(s, i3)
-		//ROR	(s)
-		//ROR	(s)
-		//ANDI	(s, 0x01)
-		s<<=7;
+		ROR	(s)
+		ROR	(s)
+		ANDI	(s, 0x80)
 		s = (s | i2>>1);
 		#undef tmp
 
