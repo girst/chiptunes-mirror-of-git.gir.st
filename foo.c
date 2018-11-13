@@ -24,7 +24,7 @@ void g(void) {
 	SUBI	(t, -8)
 	skip:
 	t = data[t];
-	t = ((i1<<8|i0)*t) >> o;
+	t = (((i1&0x1f)<<8|i0)*t) >> o;
 	AND	(t, x)
 	ANDI	(t, 3)
 	RET
