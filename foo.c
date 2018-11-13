@@ -30,7 +30,10 @@ void mod3(void) { //avail: t, o _
 	OR	(tmp, Mh)
 	ANDI	(Ml, 0x0f)
 	ADD	(Ml, tmp) //discard tmp
-    Ml = (Ml >>  2) + (Ml & 0x3);
+	MOV	(tmp, Ml)
+	LSR	(tmp)
+	LSR	(tmp)
+    Ml = (tmp) + (Ml & 0x3);
     Ml = (Ml >>  2) + (Ml & 0x3);
     if (Ml > 2) Ml = Ml - 3;
     #undef tmp
