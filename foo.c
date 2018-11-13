@@ -29,13 +29,17 @@ void mod3(void) { //avail: t, o _
 	SWAP	(Mh)
 	OR	(tmp, Mh)
 	ANDI	(Ml, 0x0f)
-	ADD	(Ml, tmp) //discard tmp
+	ADD	(Ml, tmp)
 	MOV	(tmp, Ml)
 	LSR	(tmp)
 	LSR	(tmp)
 	ANDI	(Ml, 0x03)
-    Ml = (tmp) + (Ml);
-    Ml = (Ml >>  2) + (Ml & 0x3);
+	ADD	(Ml, tmp)
+	MOV	(tmp, Ml)
+	LSR	(tmp)
+	LSR	(tmp)
+	ANDI	(Ml, 0x03)
+	ADD	(Ml, tmp)
     if (Ml > 2) Ml = Ml - 3;
     #undef tmp
 }
