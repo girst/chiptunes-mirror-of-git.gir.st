@@ -150,10 +150,10 @@ int main(void) {
 		#undef tmp
 		RCALL	mod3();
 		ADD	(t, n)
-		LDI	(o, 2)
 		RCALL	g();
-	t >>= o; //NOTE: o == {1, 2, 4}
-	ANDI	(t, 3)
+		LSR	(t)
+		LSR	(t)
+		ANDI	(t, 3)
 		MOV	(x, s)
 		INC	(x)
 		#define tmp o
@@ -201,10 +201,9 @@ int main(void) {
 		SUB	(t, n)
 		NEG	(t)
 		SUBI	(t, -8)
-		LDI	(o, 1)
 		RCALL	g();
-	t >>= o; //NOTE: o == {1, 2, 4}
-	ANDI	(t, 3)
+		LSR	(t)
+		ANDI	(t, 3)
 		MOV	(x, s)
 		INC	(x)
 		#define tmp o
