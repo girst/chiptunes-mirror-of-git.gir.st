@@ -41,7 +41,10 @@ void mod3(void) {
 	LSR	(tmp)
 	ANDI	(Ml, 0x03)
 	ADD	(Ml, tmp)
-	if (Ml > 2) Ml = Ml - 3; //TODO
+	CPI	(Ml, 3)
+	BRPL	(skip)
+	Ml = Ml - 3; //TODO
+	skip:;
 	#undef tmp
 }
 void g(void) {
