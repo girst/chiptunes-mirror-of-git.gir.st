@@ -28,7 +28,8 @@ void mod3(void) { //avail: t, o _
 	ANDI	(tmp, 0x0f)
 	SWAP	(Mh)
 	OR	(tmp, Mh)
-    Ml = (tmp) + (Ml & 0xF);
+	ANDI	(Ml, 0x0f)
+	ADD	(Ml, tmp) //discard tmp
     Ml = (Ml >>  2) + (Ml & 0x3);
     Ml = (Ml >>  2) + (Ml & 0x3);
     if (Ml > 2) Ml = Ml - 3;
