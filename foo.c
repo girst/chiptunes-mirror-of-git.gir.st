@@ -100,7 +100,9 @@ int main(void) {
 		#define tmp o
 		x = (x*0x33)>>8;
 		#undef tmp
-		t = n - (((i3&0x01)<<14 | i2<<6 | i1>>2) % 3);
+		t = ((i3&0x01)<<14 | i2<<6 | i1>>2) % 3;
+		SUB	(t, n)
+		NEG	(t)
 		SUBI	(t, -8)
 		LDI	(o, 9)
 		RCALL	g();
