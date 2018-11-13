@@ -11,10 +11,10 @@
 #define ORI(x,n)  x |= n;
 #define EOR(x,y)  x ^= y;
 #define ADD(x,y)  carry = (x+y)>>8; x += y;
-#define ADC(x,y,c)x += y; x+=c;
-#define SUB(x,y)  x -= y;
-#define SUBI(x,n) x -= (u8)n;
-#define INC(x)    x++;
+#define ADC(x,y,c)x += y; x+=c; //TODO: carry
+#define SUB(x,y)  x -= y; //TODO: carry
+#define SUBI(x,n) x -= (u8)n; //TODO: carry
+#define INC(x)    x++; //WARN: does not set carry
 #define MOV(x,y)  x = y;
 #define LDI(x,n)  x = n;
 #define SBRC(x,b) if (x & b) //skip if cleared => do if set

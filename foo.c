@@ -87,7 +87,7 @@ int main(void) {
 		INC	(x)
 		#define tmp o
 		MOV	(tmp, x)
-		LSR	(tmp) //don't rely on carry empty after mov | ror only after add
+		LSR	(tmp)
 		LSR	(tmp)
 		ADD	(tmp, x)
 		ROR	(tmp)
