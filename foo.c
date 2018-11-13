@@ -177,7 +177,17 @@ int main(void) {
 		LSR	(tmp)
                 MOV	(x, tmp)
 		#undef tmp
-		Ml = i2<<6 | i1>>2;
+		MOV	(Ml, i2)
+		SWAP	(Ml)
+		ANDI	(Ml, 0xf0)
+		LSL	(Ml)
+		LSL	(Ml)
+		#define tmp Mh
+		MOV	(tmp, i1)
+		LSR	(tmp)
+		LSR	(tmp)
+		OR	(Ml, tmp)
+		#undef tmp
 		Mh = i3<<6 | i2>>2;
 		RCALL	mod3();
 		SUB	(t, n)
