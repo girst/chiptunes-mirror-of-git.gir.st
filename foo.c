@@ -86,24 +86,26 @@ int main(void) {
 		MOV	(x, s)
 		INC	(x)
 		#define tmp o
-                unsigned short sum = 0; //XXX
-                sum += x;
-                sum >>= 1;
+		//NOTE: we only need 1 bit of the upper byte. instead of using a u16 and LSR'ing, 
+		//we can use a u8 for sum and use ROR (which shifts the carry in)
+		CLR	(tmp)
+		ADD	(tmp, x)
+		ROR	(tmp)
                 //nop
-                sum >>= 1;
-                sum += x;
-                sum >>= 1;
+		LSR	(tmp)
+		ADD	(tmp, x)
+		ROR	(tmp)
                 //nop
-                sum >>= 1;
-                sum += x;
-                sum >>= 1;
+		LSR	(tmp)
+		ADD	(tmp, x)
+		ROR	(tmp)
                 //nop
-                sum >>= 1;
-                sum += x;
-                sum >>= 1;
+		LSR	(tmp)
+		ADD	(tmp, x)
+		ROR	(tmp)
                 //nop
-                sum >>= 1;
-                x = sum;
+		LSR	(tmp)
+                x = tmp;
 		#undef tmp
 		t = ((i3&0x01)<<13 | i2<<5 | i1>>3) % 3;
 		ADD	(t, n)
@@ -115,7 +117,7 @@ int main(void) {
 		MOV	(x, s)
 		INC	(x)
 		#define tmp o
-                sum = 0; //XXX
+                unsigned short sum = 0; //XXX
                 sum += x;
                 sum >>= 1;
                 sum += x;

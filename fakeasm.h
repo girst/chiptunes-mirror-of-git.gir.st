@@ -2,15 +2,15 @@
 #define c2(x) (0xff & (x>>16))
 #define c1(x) (0xff & (x>> 8))
 #define c0(x) (0xff & (x    ))
-#define LSL(x)    x <<= 1;
-#define LSR(x)    x >>= 1;
+#define LSL(x)    carry = x>>7; x <<= 1;
+#define LSR(x)    carry = x&1; x >>= 1;
 #define SWAP(x)   x = ((x & 0x0F) << 4 | (x & 0xF0) >> 4);
 #define AND(x,y)  x &= y;
 #define ANDI(x,n) x &= n;
 #define OR(x,y)   x |= y;
 #define ORI(x,n)  x |= n;
 #define EOR(x,y)  x ^= y;
-#define ADD(x,y)  x += y;
+#define ADD(x,y)  carry = (x+y)>>8; x += y;
 #define ADC(x,y,c)x += y; x+=c;
 #define SUB(x,y)  x -= y;
 #define SUBI(x,n) x -= (u8)n;
