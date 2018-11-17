@@ -211,22 +211,20 @@ int main(void) {
 		RCALL	g();
 		LSR	(t)
 		ANDI	(t, 3)
-		#define x s //don't need `s` afterwards
-		INC	(x)
+		INC	(s)
 		#define tmp _
-                MOV	(tmp, x)
+                MOV	(tmp, s)
 		LSR	(tmp)
-                ADD	(tmp, x)
+                ADD	(tmp, s)
 		ROR	(tmp)
 		LSR	(tmp)
 		LSR	(tmp)
-                ADD	(tmp, x)
+                ADD	(tmp, s)
 		ROR	(tmp)
-                ADD	(tmp, x)
+                ADD	(tmp, s)
 		ROR	(tmp)
 		LSR	(tmp)
 		LSR	(tmp)
-		#undef x
 		AND	(t, tmp)
 		#undef tmp
 		ADD	(acc, t)
