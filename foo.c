@@ -93,7 +93,6 @@ void g(void) {
 	t = a1;
 	#undef a0
 	
-	t &= 0x1e; //hint -- TODO: breaks without!?
 	RET //TODO: replace CALL/RET with IJMP?
 };
 
@@ -129,6 +128,7 @@ int main(void) {
 		MOV	(t, n)
 		RCALL	g();
 		SWAP	(t)
+		ANDI	(t, 1)
 		MOV	(acc, t)
 
 		//voice 2:
