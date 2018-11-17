@@ -15,6 +15,7 @@
 #define SUB(x,y)  x -= y; //TODO: carry
 #define SUBI(x,n) x -= (u8)n; //TODO: carry
 #define INC(x)    x++; //WARN: does not set carry
+#define DEC(x)    x--; sr_zero=!x;
 #define MOV(x,y)  x = y;
 #define LDI(x,n)  x = n;
 #define SBRC(x,b) if (x & 1<<b) //skip if cleared => do if set
@@ -25,6 +26,7 @@
 int sr_zero = 0; //status register zero bit
 #define TST(x)    if(x==0)sr_zero=1;else sr_zero=0; //WARN: not a complete TST mockup
 #define BREQ(l)   if(sr_zero) goto l;
+#define BRNE(l)   if(!sr_zero) goto l;
 int carry = 0; //status register carry bit //WARN: not respected by all mocked instructions
 int asmtmp = 0;
 #define ROL(x)	asmtmp = x>>7; x <<= 1; x |= carry; carry = asmtmp;

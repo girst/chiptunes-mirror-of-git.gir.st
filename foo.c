@@ -80,16 +80,16 @@ void g(void) {
 	CLR	(a1)
 	LDI	(loop, 8)
 	mul:
-		SBRS	(t, 0)
-		RJMP	(skip2)
-		ADD	(a1, i0)
-		ADC	(a2, i1, carry)
-		skip2:
-		LSR	(a2)
-		ROR	(a1)
-		ROR	(t)
-		loop--;
-		if (loop) goto mul;
+	SBRS	(t, 0)
+	RJMP	(skip2)
+	ADD	(a1, i0)
+	ADC	(a2, i1, carry)
+	skip2:
+	LSR	(a2)
+	ROR	(a1)
+	ROR	(t)
+	DEC	(loop)
+	BRNE	(mul)
 	MOV	(t, a1)
 	#undef a0
 	#undef a1
