@@ -83,8 +83,8 @@ void g(void) {
 
 	for (u8 loop = 0; loop < 8; loop++) { //Note: t&2 always zero
 		if (t & 1) {
-			a2 += i1 + ((a1+i0)>>8); //2. ADC a2, i1
-			a1 += i0;                //1. ADD a1, i0
+			ADD	(a1, i0)
+			ADC	(a2, i1, carry)
 		}
 		t >>= 1; t|=a1<<7;             //3. ROR t
 		a1>>= 1;a1|=a2<<7;             //2. ROR a1
