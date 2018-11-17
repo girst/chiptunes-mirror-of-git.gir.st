@@ -15,7 +15,7 @@ u8 i3;		//r21
 u8 n;		//r22
 u8 s;		//r23
 u8 _;		//r24
-		//r25
+u8 loop;	//r25
 u8 t;/*==Ml*/	//r26 (Xlo)
 u8 x;/*==Mh*/	//r27 (Xhi)
 		//r28
@@ -78,17 +78,19 @@ void g(void) {
 	#define a0 t
 	CLR	(a2)
 	CLR	(a1)
-	for (u8 loop = 0; loop < 8; loop++) { //Note: t&2 always zero
+	LDI	(loop, 8)
+	mul:
 		SBRS	(t, 0)
-		goto skip2;
+		RJMP	(skip2)
 		ADD	(a1, i0)
 		ADC	(a2, i1, carry)
 		skip2:
 		LSR	(a2)
 		ROR	(a1)
 		ROR	(t)
-	}
-	MOV	(t, a1) //can't return x or _ as a1, both needed later besides t
+		loop--;
+		if (loop) goto mul;
+	MOV	(t, a1)
 	#undef a0
 	#undef a1
 	#undef a2
