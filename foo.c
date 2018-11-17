@@ -73,14 +73,11 @@ void g(void) {
 	  ADD X_lo, t
 	  ADC X_hi, zero
 	  LD  t, X         */
-	//t = (((i1&0x1f)<<8|i0)*t)>>8; //TODO
-
 	#define a1 x
 	#define a2 _
-	a2 = 0;
-	a1 = 0;
 	#define a0 t
-
+	CLR	(a2)
+	CLR	(a1)
 	for (u8 loop = 0; loop < 8; loop++) { //Note: t&2 always zero
 		SBRS	(t, 0)
 		goto skip2;
@@ -93,8 +90,10 @@ void g(void) {
 		ROR	(a1)
 		ROR	(t)
 	}
-	t = a1;
+	MOV	(t, a1) //can't return x or _ as a1, both needed later besides t
 	#undef a0
+	#undef a1
+	#undef a2
 	
 	RET //TODO: replace CALL/RET with IJMP?
 };
