@@ -76,6 +76,7 @@ void g(void) {
 	#define a1 x
 	#define a2 _
 	#define a0 t
+	// start MUL -- 92 cycles :( (unrolled and skipping second bit: 76)
 	CLR	(a2)
 	CLR	(a1)
 	LDI	(loop, 8)
@@ -90,6 +91,7 @@ void g(void) {
 	ROR	(t)
 	DEC	(loop)
 	BRNE	(mul)
+	// end MUL
 	MOV	(t, a1)
 	#undef a0
 	#undef a1
