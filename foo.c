@@ -82,10 +82,13 @@ void g(void) {
 	#define a0 t
 
 	for (u8 loop = 0; loop < 8; loop++) { //Note: t&2 always zero
+		SBRS	(t, 0)
+		goto skip2;
 		if (t & 1) {
 			ADD	(a1, i0)
 			ADC	(a2, i1, carry)
 		}
+		skip2:
 		LSR	(a2)
 		ROR	(a1)
 		ROR	(t)

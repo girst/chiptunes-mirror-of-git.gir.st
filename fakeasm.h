@@ -17,7 +17,8 @@
 #define INC(x)    x++; //WARN: does not set carry
 #define MOV(x,y)  x = y;
 #define LDI(x,n)  x = n;
-#define SBRC(x,b) if (x & b) //skip if cleared => do if set
+#define SBRC(x,b) if (x & 1<<b) //skip if cleared => do if set
+#define SBRS(x,b) if (!(x & 1<<b)) //skip if set => do if not
 #define CLR(x)    x = 0;
 #define RET       return;
 #define RCALL	  //pseudo
@@ -32,3 +33,4 @@ int asmtmp = 0;
 int sr_neg = 0;
 #define CPI(x,n)  sr_neg = (x-n < 0); //WARN: not a complete CPI mockup
 #define BRPL(l)   if (sr_neg) goto l;
+#define RJMP(l)   goto l;
