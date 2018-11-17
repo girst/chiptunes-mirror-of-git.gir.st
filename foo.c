@@ -111,8 +111,7 @@ int main(void) {
 		MOV	(t, n)
 		RCALL	g();
 		SWAP	(t)
-		ANDI	(t, 0x0f)
-		ANDI	(t, 1)
+		//ANDI	(t, 1)
 		MOV	(acc, t)
 
 		//voice 2:
