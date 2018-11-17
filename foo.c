@@ -86,9 +86,9 @@ void g(void) {
 			ADD	(a1, i0)
 			ADC	(a2, i1, carry)
 		}
-		t >>= 1; t|=a1<<7;             //3. ROR t
-		a1>>= 1;a1|=a2<<7;             //2. ROR a1
-		a2>>= 1;                       //1. LSR a2
+		LSR	(a2)
+		ROR	(a1)
+		ROR	(t)
 	}
 	t = a1;
 	#undef a0
