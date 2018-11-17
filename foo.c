@@ -177,9 +177,8 @@ int main(void) {
 		ADD	(tmp, x)
 		ROR	(tmp)
 		LSR	(tmp)
-                MOV	(x, tmp)
+		AND	(t, tmp)
 		#undef tmp
-		AND	(t, x)
 		ADD	(acc, t)
 
 		//voice 4:
@@ -227,9 +226,8 @@ int main(void) {
 		ROR	(tmp)
 		LSR	(tmp)
 		LSR	(tmp)
-                MOV	(x, tmp)
+		AND	(t, tmp)
 		#undef tmp
-		AND	(t, x)
 		ADD	(acc, t)
 
 		putchar(acc<<4); //TODO
