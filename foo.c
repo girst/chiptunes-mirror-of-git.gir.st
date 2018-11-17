@@ -211,7 +211,7 @@ int main(void) {
 		RCALL	g();
 		LSR	(t)
 		ANDI	(t, 3)
-		MOV	(x, s)
+		#define x s //don't need `s` afterwards
 		INC	(x)
 		#define tmp _
                 MOV	(tmp, x)
@@ -226,6 +226,7 @@ int main(void) {
 		ROR	(tmp)
 		LSR	(tmp)
 		LSR	(tmp)
+		#undef x
 		AND	(t, tmp)
 		#undef tmp
 		ADD	(acc, t)
