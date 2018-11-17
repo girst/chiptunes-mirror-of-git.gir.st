@@ -98,7 +98,7 @@ int main(void) {
 		OR	(n, tmp)
 		#undef tmp
 		MOV	(s, i3)
-		ROR	(s)
+		LSR	(s)
 		ROR	(s)
 		ANDI	(s, 0x80)
 		#define tmp _
@@ -111,7 +111,6 @@ int main(void) {
 		MOV	(t, n)
 		RCALL	g();
 		SWAP	(t)
-		//ANDI	(t, 1)
 		MOV	(acc, t)
 
 		//voice 2:
