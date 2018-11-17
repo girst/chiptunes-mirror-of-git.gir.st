@@ -74,7 +74,23 @@ void g(void) {
 	  ADC X_hi, zero
 	  LD  t, X         */
 	t &= 0xfd; //hint
-	t = (((i1&0x1f)<<8|i0)*t)>>8; //TODO
+	//t = (((i1&0x1f)<<8|i0)*t)>>8; //TODO
+
+	u8 a2 = 0;
+	u8 a1 = 0;
+	#define a0 t
+
+	for (u8 loop = 0; loop < 8; loop++) { //Note: t&2 always zero
+		if (t & 1) {
+			a2 += i1 + ((a1+i0)>>8); //2. ADC a2, i1
+			a1 += i0;                //1. ADD a1, i0
+		}
+		t >>= 1; t|=a1<<7;             //3. ROR t
+		a1>>= 1;a1|=a2<<7;             //2. ROR a1
+		a2>>= 1;                       //1. LSR a2
+	}
+	t = a1;
+	
 	t &= 0x1e; //hint
 	RET //TODO: replace CALL/RET with IJMP?
 };
