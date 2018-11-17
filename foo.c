@@ -73,7 +73,9 @@ void g(void) {
 	  ADD X_lo, t
 	  ADC X_hi, zero
 	  LD  t, X         */
+	t &= 0xfd; //hint
 	t = (((i1&0x1f)<<8|i0)*t)>>8; //TODO
+	t &= 0x1e; //hint
 	RET //TODO: replace CALL/RET with IJMP?
 };
 
