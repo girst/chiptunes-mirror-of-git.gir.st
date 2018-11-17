@@ -73,11 +73,12 @@ void g(void) {
 	  ADD X_lo, t
 	  ADC X_hi, zero
 	  LD  t, X         */
-	t &= 0xfd; //hint
 	//t = (((i1&0x1f)<<8|i0)*t)>>8; //TODO
 
-	u8 a2 = 0;
-	u8 a1 = 0;
+	#define a1 x
+	#define a2 _
+	a2 = 0;
+	a1 = 0;
 	#define a0 t
 
 	for (u8 loop = 0; loop < 8; loop++) { //Note: t&2 always zero
@@ -90,8 +91,9 @@ void g(void) {
 		a2>>= 1;                       //1. LSR a2
 	}
 	t = a1;
+	#undef a0
 	
-	t &= 0x1e; //hint
+	t &= 0x1e; //hint -- TODO: breaks without!?
 	RET //TODO: replace CALL/RET with IJMP?
 };
 
