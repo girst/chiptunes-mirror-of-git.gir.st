@@ -64,92 +64,189 @@ void mul(void) { //don't need overhead of function (inline it)
 	CLR	(a2)
 	CLR	(a1)
 
-	#define MUL_ADD_ROR \
-		ADD	(a1, i0) \
-		ADC	(a2, i1, carry) \
-		MUL_ROR
-
-	#define MUL_ROR \
-		LSR	(a2) \
-		ROR	(a1)
-
 	switch(t) {
 	case 0x58: // 0101 1000
-		MUL_ROR
-		MUL_ROR
-		MUL_ROR
-		MUL_ADD_ROR
+		LSR (a2)
+		ROR (a1)
+		LSR (a2)
+		ROR (a1)
+		LSR (a2)
+		ROR (a1)
+		ADD (a1, i0)
+		ADC (a2, i1, carry)
+		LSR (a2)
+		ROR (a1)
 
-		MUL_ADD_ROR
-		MUL_ROR
-		MUL_ADD_ROR
-		MUL_ROR
+		ADD (a1, i0)
+		ADC (a2, i1, carry)
+		LSR (a2)
+		ROR (a1)
+		LSR (a2)
+		ROR (a1)
+		ADD (a1, i0)
+		ADC (a2, i1, carry)
+		LSR (a2)
+		ROR (a1)
+		LSR (a2)
+		ROR (a1)
 		break;
 	case 0x69: // 0110 1001
-		MUL_ADD_ROR
-		MUL_ROR
-		MUL_ROR
-		MUL_ADD_ROR
+		ADD (a1, i0)
+		ADC (a2, i1, carry)
+		LSR (a2)
+		ROR (a1)
+		LSR (a2)
+		ROR (a1)
+		LSR (a2)
+		ROR (a1)
+		ADD (a1, i0)
+		ADC (a2, i1, carry)
+		LSR (a2)
+		ROR (a1)
 
-		MUL_ROR
-		MUL_ADD_ROR
-		MUL_ADD_ROR
-		MUL_ROR
+		LSR (a2)
+		ROR (a1)
+		ADD (a1, i0)
+		ADC (a2, i1, carry)
+		LSR (a2)
+		ROR (a1)
+		ADD (a1, i0)
+		ADC (a2, i1, carry)
+		LSR (a2)
+		ROR (a1)
+		LSR (a2)
+		ROR (a1)
 		break;
 	case 0x75: // 0111 0101
-		MUL_ADD_ROR
-		MUL_ROR
-		MUL_ADD_ROR
-		MUL_ROR
+		ADD (a1, i0)
+		ADC (a2, i1, carry)
+		LSR (a2)
+		ROR (a1)
+		LSR (a2)
+		ROR (a1)
+		ADD (a1, i0)
+		ADC (a2, i1, carry)
+		LSR (a2)
+		ROR (a1)
+		LSR (a2)
+		ROR (a1)
 
-		MUL_ADD_ROR
-		MUL_ADD_ROR
-		MUL_ADD_ROR
-		MUL_ROR
+		ADD (a1, i0)
+		ADC (a2, i1, carry)
+		LSR (a2)
+		ROR (a1)
+		ADD (a1, i0)
+		ADC (a2, i1, carry)
+		LSR (a2)
+		ROR (a1)
+		ADD (a1, i0)
+		ADC (a2, i1, carry)
+		LSR (a2)
+		ROR (a1)
+		LSR (a2)
+		ROR (a1)
 		break;
 	case 0x84: // 1000 0100
-		MUL_ROR
-		MUL_ROR
-		MUL_ADD_ROR
-		MUL_ROR
+		LSR (a2)
+		ROR (a1)
+		LSR (a2)
+		ROR (a1)
+		ADD (a1, i0)
+		ADC (a2, i1, carry)
+		LSR (a2)
+		ROR (a1)
+		LSR (a2)
+		ROR (a1)
 
-		MUL_ROR
-		MUL_ROR
-		MUL_ROR
-		MUL_ADD_ROR
+		LSR (a2)
+		ROR (a1)
+		LSR (a2)
+		ROR (a1)
+		LSR (a2)
+		ROR (a1)
+		ADD (a1, i0)
+		ADC (a2, i1, carry)
+		LSR (a2)
+		ROR (a1)
 		break;
 	case 0x8c: // 1000 1100
-		MUL_ROR
-		MUL_ROR
-		MUL_ADD_ROR
-		MUL_ADD_ROR
+		LSR (a2)
+		ROR (a1)
+		LSR (a2)
+		ROR (a1)
+		ADD (a1, i0)
+		ADC (a2, i1, carry)
+		LSR (a2)
+		ROR (a1)
+		ADD (a1, i0)
+		ADC (a2, i1, carry)
+		LSR (a2)
+		ROR (a1)
 
-		MUL_ROR
-		MUL_ROR
-		MUL_ROR
-		MUL_ADD_ROR
+		LSR (a2)
+		ROR (a1)
+		LSR (a2)
+		ROR (a1)
+		LSR (a2)
+		ROR (a1)
+		ADD (a1, i0)
+		ADC (a2, i1, carry)
+		LSR (a2)
+		ROR (a1)
 		break;
 	case 0x9d: // 1001 1101
-		MUL_ADD_ROR
-		MUL_ROR
-		MUL_ADD_ROR
-		MUL_ADD_ROR
+		ADD (a1, i0)
+		ADC (a2, i1, carry)
+		LSR (a2)
+		ROR (a1)
+		LSR (a2)
+		ROR (a1)
+		ADD (a1, i0)
+		ADC (a2, i1, carry)
+		LSR (a2)
+		ROR (a1)
+		ADD (a1, i0)
+		ADC (a2, i1, carry)
+		LSR (a2)
+		ROR (a1)
 
-		MUL_ADD_ROR
-		MUL_ROR
-		MUL_ROR
-		MUL_ADD_ROR
+		ADD (a1, i0)
+		ADC (a2, i1, carry)
+		LSR (a2)
+		ROR (a1)
+		LSR (a2)
+		ROR (a1)
+		LSR (a2)
+		ROR (a1)
+		ADD (a1, i0)
+		ADC (a2, i1, carry)
+		LSR (a2)
+		ROR (a1)
 		break;
 	case 0xb0: // 1011 0000
-		MUL_ROR
-		MUL_ROR
-		MUL_ROR
-		MUL_ROR
+		LSR (a2)
+		ROR (a1)
+		LSR (a2)
+		ROR (a1)
+		LSR (a2)
+		ROR (a1)
+		LSR (a2)
+		ROR (a1)
 
-		MUL_ADD_ROR
-		MUL_ADD_ROR
-		MUL_ROR
-		MUL_ADD_ROR
+		ADD (a1, i0)
+		ADC (a2, i1, carry)
+		LSR (a2)
+		ROR (a1)
+		ADD (a1, i0)
+		ADC (a2, i1, carry)
+		LSR (a2)
+		ROR (a1)
+		LSR (a2)
+		ROR (a1)
+		ADD (a1, i0)
+		ADC (a2, i1, carry)
+		LSR (a2)
+		ROR (a1)
 	}
 
 	// end MUL
