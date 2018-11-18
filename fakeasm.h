@@ -33,6 +33,6 @@ int asmtmp = 0;
 #define ROR(x)	asmtmp = x&0x1; x >>= 1; x |= carry<<7; carry = asmtmp;
 #define NEG(x)	x *= -1;
 int sr_neg = 0;
-#define CPI(x,n)  sr_neg = (x-n < 0); //WARN: not a complete CPI mockup
+#define CPI(x,n)  sr_neg = (x-n < 0);sr_zero = (x-n == 0); //WARN: not a complete CPI mockup
 #define BRPL(l)   if (sr_neg) goto l;
 #define RJMP(l)   goto l;

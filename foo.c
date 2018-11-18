@@ -64,8 +64,21 @@ void mul(void) { //don't need overhead of function (inline it)
 	CLR	(a2)
 	CLR	(a1)
 
-	switch(t) {
-	case 0x58: // 0101 1000
+	CPI	(t, 0x58)
+	BREQ	(mul_58)
+	CPI	(t, 0x69)
+	BREQ	(mul_69)
+	CPI	(t, 0x75)
+	BREQ	(mul_75)
+	CPI	(t, 0x84)
+	BREQ	(mul_84)
+	CPI	(t, 0x8c)
+	BREQ	(mul_8c)
+	CPI	(t, 0x9d)
+	BREQ	(mul_9d)
+	CPI	(t, 0xb0)
+	BREQ	(mul_b0)
+	mul_58: // 0101 1000
 		LSR (a2)
 		ROR (a1)
 		LSR (a2)
@@ -89,8 +102,8 @@ void mul(void) { //don't need overhead of function (inline it)
 		ROR (a1)
 		LSR (a2)
 		ROR (a1)
-		break;
-	case 0x69: // 0110 1001
+		RJMP	(endmul)
+	mul_69: // 0110 1001
 		ADD (a1, i0)
 		ADC (a2, i1, carry)
 		LSR (a2)
@@ -116,8 +129,8 @@ void mul(void) { //don't need overhead of function (inline it)
 		ROR (a1)
 		LSR (a2)
 		ROR (a1)
-		break;
-	case 0x75: // 0111 0101
+		RJMP	(endmul)
+	mul_75: // 0111 0101
 		ADD (a1, i0)
 		ADC (a2, i1, carry)
 		LSR (a2)
@@ -145,8 +158,8 @@ void mul(void) { //don't need overhead of function (inline it)
 		ROR (a1)
 		LSR (a2)
 		ROR (a1)
-		break;
-	case 0x84: // 1000 0100
+		RJMP	(endmul)
+	mul_84: // 1000 0100
 		LSR (a2)
 		ROR (a1)
 		LSR (a2)
@@ -168,8 +181,8 @@ void mul(void) { //don't need overhead of function (inline it)
 		ADC (a2, i1, carry)
 		LSR (a2)
 		ROR (a1)
-		break;
-	case 0x8c: // 1000 1100
+		RJMP	(endmul)
+	mul_8c: // 1000 1100
 		LSR (a2)
 		ROR (a1)
 		LSR (a2)
@@ -193,8 +206,8 @@ void mul(void) { //don't need overhead of function (inline it)
 		ADC (a2, i1, carry)
 		LSR (a2)
 		ROR (a1)
-		break;
-	case 0x9d: // 1001 1101
+		RJMP	(endmul)
+	mul_9d: // 1001 1101
 		ADD (a1, i0)
 		ADC (a2, i1, carry)
 		LSR (a2)
@@ -222,8 +235,8 @@ void mul(void) { //don't need overhead of function (inline it)
 		ADC (a2, i1, carry)
 		LSR (a2)
 		ROR (a1)
-		break;
-	case 0xb0: // 1011 0000
+		RJMP	(endmul)
+	mul_b0: // 1011 0000
 		LSR (a2)
 		ROR (a1)
 		LSR (a2)
@@ -247,7 +260,7 @@ void mul(void) { //don't need overhead of function (inline it)
 		ADC (a2, i1, carry)
 		LSR (a2)
 		ROR (a1)
-	}
+	endmul:
 
 	// end MUL
 	#undef a0
