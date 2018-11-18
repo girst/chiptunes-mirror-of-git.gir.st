@@ -71,8 +71,7 @@ void mul(void) { //don't need overhead of function (inline it)
 
 	#define MUL_ROR \
 		LSR	(a2) \
-		ROR	(a1) \
-		ROR	(t) //superfluous?
+		ROR	(a1)
 
 	switch(t) {
 	case 0x58: // 0101 1000
