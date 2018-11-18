@@ -15,7 +15,7 @@ u8 i3;		//r21
 u8 n;		//r22
 u8 s;		//r23
 u8 _;		//r24
-u8 loop;	//r25
+		//r25
 u8 t;/*==Ml*/	//r26 (Xlo)
 u8 x;/*==Mh*/	//r27 (Xhi)
 		//r28
@@ -67,6 +67,7 @@ void g(void) {
 	BREQ	(skip)
 	SUBI	(t, -8)
 	skip:
+	//TODO: directly load address to mul_* routine and jump to it?
 	t = data[t];
 	/*MOV X_hi==x, data_hi
 	  MOV X_lo==t, data_lo
@@ -117,8 +118,6 @@ void g(void) {
 		ADC (a2, i1, carry)
 		LSR (a2)
 		ROR (a1)
-		LSR (a2)
-		ROR (a1)
 		RJMP	(endmul)
 	mul_69: // 0110 1001 (26cy)
 		ADD (a1, i0)
@@ -142,8 +141,6 @@ void g(void) {
 		ROR (a1)
 		ADD (a1, i0)
 		ADC (a2, i1, carry)
-		LSR (a2)
-		ROR (a1)
 		LSR (a2)
 		ROR (a1)
 		RJMP	(endmul)
@@ -173,8 +170,6 @@ void g(void) {
 		ADC (a2, i1, carry)
 		LSR (a2)
 		ROR (a1)
-		LSR (a2)
-		ROR (a1)
 		RJMP	(endmul)
 	mul_84: // 1000 0100 (22cy)
 		LSR (a2)
@@ -196,8 +191,6 @@ void g(void) {
 		ROR (a1)
 		ADD (a1, i0)
 		ADC (a2, i1, carry)
-		LSR (a2)
-		ROR (a1)
 		RJMP	(endmul)
 	mul_8c: // 1000 1100 (24cy)
 		LSR (a2)
@@ -221,8 +214,6 @@ void g(void) {
 		ROR (a1)
 		ADD (a1, i0)
 		ADC (a2, i1, carry)
-		LSR (a2)
-		ROR (a1)
 		RJMP	(endmul)
 	mul_9d: // 1001 1101 (28cy)
 		ADD (a1, i0)
@@ -250,8 +241,6 @@ void g(void) {
 		ROR (a1)
 		ADD (a1, i0)
 		ADC (a2, i1, carry)
-		LSR (a2)
-		ROR (a1)
 		RJMP	(endmul)
 	mul_b0: // 1011 0000 (22cy)
 		LSR (a2)
@@ -275,14 +264,14 @@ void g(void) {
 		ROR (a1)
 		ADD (a1, i0)
 		ADC (a2, i1, carry)
-		LSR (a2)
-		ROR (a1)
 	endmul:
+		LSR (a2) //final shift is a common operation for all
+		ROR (a1)
 	// end MUL
+	MOV	(t, a1)
 	#undef a0
 	#undef a1
 	#undef a2
-	MOV	(t, x)
 	RET //TODO: replace CALL/RET with IJMP?
 };
 
