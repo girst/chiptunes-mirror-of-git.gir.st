@@ -55,17 +55,33 @@ void mod3(void) {
 	RET
 	#undef tmp
 }
-void mul(void) { //don't need overhead of function (inline it)
-	// i1.i0 * t -> _.x.t
+void g(void) {
+	// g(i, t) -> t
+	// tempvars: `x` and `_`
+	#define tmp _
+	ANDI	(t, 0x07)
+	MOV	(tmp, i2)
+	ANDI	(tmp, 3)
+	TST	(tmp)
+	#undef tmp
+	BREQ	(skip)
+	SUBI	(t, -8)
+	skip:
+	t = data[t];
+	/*MOV X_hi==x, data_hi
+	  MOV X_lo==t, data_lo
+	  ADD X_lo, t
+	  ADC X_hi, zero
+	  LD  t, X         */
 	#define a1 x
 	#define a2 _
 	#define a0 t
-	// start MUL -- 92 cycles :( (unrolled and skipping second bit: 76)
+	// start MUL
 	CLR	(a2)
 	CLR	(a1)
 
 	//sorted by ocurrence, then longest cycle count first
-	CPI	(t, 0x69) // most common
+	CPI	(t, 0x69)
 	BREQ	(mul_69)
 	CPI	(t, 0x75)
 	BREQ	(mul_75)
@@ -262,32 +278,10 @@ void mul(void) { //don't need overhead of function (inline it)
 		LSR (a2)
 		ROR (a1)
 	endmul:
-
 	// end MUL
 	#undef a0
 	#undef a1
 	#undef a2
-	RET
-}
-void g(void) {
-	// g(i, t) -> t
-	// tempvars: `x` and `_`
-	#define tmp _
-	ANDI	(t, 0x07)
-	MOV	(tmp, i2)
-	ANDI	(tmp, 3)
-	TST	(tmp)
-	#undef tmp
-	BREQ	(skip)
-	SUBI	(t, -8)
-	skip:
-	t = data[t];
-	/*MOV X_hi==x, data_hi
-	  MOV X_lo==t, data_lo
-	  ADD X_lo, t
-	  ADC X_hi, zero
-	  LD  t, X         */
-	RCALL	mul(); //stores used value in in x
 	MOV	(t, x)
 	RET //TODO: replace CALL/RET with IJMP?
 };
