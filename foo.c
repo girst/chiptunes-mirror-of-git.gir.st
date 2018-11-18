@@ -68,10 +68,35 @@ void g(void) {
 	SUBI	(t, -8)
 	skip:
 	//TODO: directly load address to mul_* routine and jump to it?
+	;static void* mul_jmptable[] = {   
+		&&mul_84, &&mul_9d, &&mul_b0, &&mul_69, &&mul_9d, &&mul_84, &&mul_69, &&mul_58,
+		&&mul_75, &&mul_8c, &&mul_b0, &&mul_69, &&mul_8c, &&mul_75, &&mul_69, &&mul_58
+	};
+	void *t_;
+	t_ = mul_jmptable[t];
+	#define a1 x
+	#define a2 _
+	#define a0 t
+	CLR	(a2)
+	CLR	(a1)
+	goto *t_; //GNU extension simulates indirect jump
+	/*
+	  LDI  Xlo==x, data_lo
+	  ADD  Xlo, t
+	  ADD  Xlo, t  ; 16 bit value; advance by 2*u8
+	  LDI  Xhi==t, data_hi <--this won't work, need t afterwards
+	  ADC  Xhi, zero
+	  LD   Zlo, X
+	  SUBI Xlo, -1
+	  ADC  Xhi, zero
+	  LD   Zhi, X
+	  IJMP Z
+	*/
+#if 0
 	t = data[t];
-	/*MOV X_hi==x, data_hi
-	  MOV X_lo==t, data_lo
-	  ADD X_lo, t
+	/*MOV X_hi==x, data_hi _
+	  MOV X_lo==t, data_lo  \_ this won't
+	  ADD X_lo, t          _/  work! XXX
 	  ADC X_hi, zero
 	  LD  t, X         */
 	#define a1 x
@@ -80,6 +105,7 @@ void g(void) {
 	// start MUL
 	CLR	(a2)
 	CLR	(a1)
+#endif
 
 	//sorted by ocurrence, then longest cycle count first
 	CPI	(t, 0x69)
