@@ -2,10 +2,6 @@
 #include "fakeasm.h"
 typedef unsigned char u8;
 
-u8 data[] = {   
-	0x84, 0x9d, 0xb0, 0x69, 0x9d, 0x84, 0x69, 0x58,
-	0x75, 0x8c, 0xb0, 0x69, 0x8c, 0x75, 0x69, 0x58
-};
 u8 zero;	//r16
 u8 acc;		//r17
 u8 i0;		//r18
@@ -16,12 +12,12 @@ u8 n;		//r22
 u8 s;		//r23
 u8 _;		//r24
 		//r25
-u8 t;/*==Ml*/	//r26 (Xlo)
-u8 x;/*==Mh*/	//r27 (Xhi)
+u8 x;/*==Ml*/	//r26 (Xlo)
+u8 t;/*==Mh*/	//r27 (Xhi)
 		//r28
 		//r29
-/*fakestack_l*/	//r30 (Zlo)
-/*fakestack_h*/	//r31 (Zhi)
+void *Z;	//r30 (Zlo)
+/*...*/		//r31 (Zhi)
 #define Mh x //mod3 vars
 #define Ml t // -"-
 //http://homepage.divms.uiowa.edu/~jones/bcd/mod.shtml
@@ -58,6 +54,11 @@ void mod3(void) {
 void g(void) {
 	// g(i, t) -> t
 	// tempvars: `x` and `_`
+static void* mul_jmptable[] = { // replaces data[] section at the top
+	&&mul_84, &&mul_9d, &&mul_b0, &&mul_69, &&mul_9d, &&mul_84, &&mul_69, &&mul_58,
+	&&mul_75, &&mul_8c, &&mul_b0, &&mul_69, &&mul_8c, &&mul_75, &&mul_69, &&mul_58
+	// addresses of mul_* stored in little endian (i.e. { lo(mul_84), hi(mul_84), ... })
+};
 	#define tmp _
 	ANDI	(t, 0x07)
 	MOV	(tmp, i2)
@@ -66,62 +67,25 @@ void g(void) {
 	#undef tmp
 	BREQ	(skip)
 	SUBI	(t, -8)
-	skip:
-	//TODO: directly load address to mul_* routine and jump to it?
-	;static void* mul_jmptable[] = {   
-		&&mul_84, &&mul_9d, &&mul_b0, &&mul_69, &&mul_9d, &&mul_84, &&mul_69, &&mul_58,
-		&&mul_75, &&mul_8c, &&mul_b0, &&mul_69, &&mul_8c, &&mul_75, &&mul_69, &&mul_58
-	};
-	void *t_;
-	t_ = mul_jmptable[t];
+	skip:;
 	#define a1 x
 	#define a2 _
 	#define a0 t
 	CLR	(a2)
 	CLR	(a1)
-	goto *t_; //GNU extension simulates indirect jump
-	/*
-	  LDI  Xlo==x, data_lo
+	goto *mul_jmptable[t]; /*
+	  LDI  Xlo, lo(mul_jmptable)
+	  LDI  Xhi, hi(mul_jmptable)
 	  ADD  Xlo, t
-	  ADD  Xlo, t  ; 16 bit value; advance by 2*u8
-	  LDI  Xhi==t, data_hi <--this won't work, need t afterwards
+	  ADC  Xhi, zero
+	  ADD  Xlo, t      ; advance twice, since it's a 16 bit address
 	  ADC  Xhi, zero
 	  LD   Zlo, X
 	  SUBI Xlo, -1
 	  ADC  Xhi, zero
 	  LD   Zhi, X
-	  IJMP Z
-	*/
-#if 0
-	t = data[t];
-	/*MOV X_hi==x, data_hi _
-	  MOV X_lo==t, data_lo  \_ this won't
-	  ADD X_lo, t          _/  work! XXX
-	  ADC X_hi, zero
-	  LD  t, X         */
-	#define a1 x
-	#define a2 _
-	#define a0 t
-	// start MUL
-	CLR	(a2)
-	CLR	(a1)
-#endif
+	  IJMP Z */
 
-	//sorted by ocurrence, then longest cycle count first
-	CPI	(t, 0x69)
-	BREQ	(mul_69)
-	CPI	(t, 0x75)
-	BREQ	(mul_75)
-	CPI	(t, 0x9d)
-	BREQ	(mul_9d)
-	CPI	(t, 0x58)
-	BREQ	(mul_58)
-	CPI	(t, 0x8c)
-	BREQ	(mul_8c)
-	CPI	(t, 0x84)
-	BREQ	(mul_84)
-	CPI	(t, 0xb0)
-	BREQ	(mul_b0)
 	mul_58: // 0101 1000 (24cy)
 		LSR (a2)
 		ROR (a1)
