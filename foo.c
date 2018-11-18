@@ -55,6 +55,110 @@ void mod3(void) {
 	RET
 	#undef tmp
 }
+void mul(void) { //don't need overhead of function (inline it)
+	// i1.i0 * t -> _.x.t
+	#define a1 x
+	#define a2 _
+	#define a0 t
+	// start MUL -- 92 cycles :( (unrolled and skipping second bit: 76)
+	CLR	(a2)
+	CLR	(a1)
+
+	#define MUL_ADD_ROR \
+		ADD	(a1, i0) \
+		ADC	(a2, i1, carry) \
+		MUL_ROR
+
+	#define MUL_ROR \
+		LSR	(a2) \
+		ROR	(a1) \
+		ROR	(t) //superfluous?
+
+	switch(t) {
+	case 0x58: // 0101 1000
+		MUL_ROR
+		MUL_ROR
+		MUL_ROR
+		MUL_ADD_ROR
+
+		MUL_ADD_ROR
+		MUL_ROR
+		MUL_ADD_ROR
+		MUL_ROR
+		break;
+	case 0x69: // 0110 1001
+		MUL_ADD_ROR
+		MUL_ROR
+		MUL_ROR
+		MUL_ADD_ROR
+
+		MUL_ROR
+		MUL_ADD_ROR
+		MUL_ADD_ROR
+		MUL_ROR
+		break;
+	case 0x75: // 0111 0101
+		MUL_ADD_ROR
+		MUL_ROR
+		MUL_ADD_ROR
+		MUL_ROR
+
+		MUL_ADD_ROR
+		MUL_ADD_ROR
+		MUL_ADD_ROR
+		MUL_ROR
+		break;
+	case 0x84: // 1000 0100
+		MUL_ROR
+		MUL_ROR
+		MUL_ADD_ROR
+		MUL_ROR
+
+		MUL_ROR
+		MUL_ROR
+		MUL_ROR
+		MUL_ADD_ROR
+		break;
+	case 0x8c: // 1000 1100
+		MUL_ROR
+		MUL_ROR
+		MUL_ADD_ROR
+		MUL_ADD_ROR
+
+		MUL_ROR
+		MUL_ROR
+		MUL_ROR
+		MUL_ADD_ROR
+		break;
+	case 0x9d: // 1001 1101
+		MUL_ADD_ROR
+		MUL_ROR
+		MUL_ADD_ROR
+		MUL_ADD_ROR
+
+		MUL_ADD_ROR
+		MUL_ROR
+		MUL_ROR
+		MUL_ADD_ROR
+		break;
+	case 0xb0: // 1011 0000
+		MUL_ROR
+		MUL_ROR
+		MUL_ROR
+		MUL_ROR
+
+		MUL_ADD_ROR
+		MUL_ADD_ROR
+		MUL_ROR
+		MUL_ADD_ROR
+	}
+
+	// end MUL
+	#undef a0
+	#undef a1
+	#undef a2
+	RET
+}
 void g(void) {
 	// g(i, t) -> t
 	// tempvars: `x` and `_`
@@ -73,30 +177,8 @@ void g(void) {
 	  ADD X_lo, t
 	  ADC X_hi, zero
 	  LD  t, X         */
-	#define a1 x
-	#define a2 _
-	#define a0 t
-	// start MUL -- 92 cycles :( (unrolled and skipping second bit: 76)
-	CLR	(a2)
-	CLR	(a1)
-	LDI	(loop, 8)
-	mul:
-	SBRS	(t, 0)
-	RJMP	(skip2)
-	ADD	(a1, i0)
-	ADC	(a2, i1, carry)
-	skip2:
-	LSR	(a2)
-	ROR	(a1)
-	ROR	(t)
-	DEC	(loop)
-	BRNE	(mul)
-	// end MUL
-	MOV	(t, a1)
-	#undef a0
-	#undef a1
-	#undef a2
-	
+	RCALL	mul(); //stores used value in in x
+	MOV	(t, x)
 	RET //TODO: replace CALL/RET with IJMP?
 };
 
