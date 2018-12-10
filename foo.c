@@ -64,16 +64,16 @@ static void* mul_jmptable[] = { // replaces data[] section at the top
 	MOV	(tmp, i2)
 	ANDI	(tmp, 3)
 	TST	(tmp)
-	#undef tmp
-	BREQ	(skip)
+	CPSE	(tmp, zero)
 	SUBI	(t, -8)
-	skip:;
+	#undef tmp
 	#define a1 x
 	#define a2 _
 	#define a0 t
 	CLR	(a2)
 	CLR	(a1)
 	goto *mul_jmptable[t]; /*
+	  ;NOTE: optimize by placing *X and *Z below address 0xff and get rid of hi byte
 	  LDI  Xlo, lo(mul_jmptable)
 	  LDI  Xhi, hi(mul_jmptable)
 	  ADD  Xlo, t
@@ -234,7 +234,7 @@ static void* mul_jmptable[] = { // replaces data[] section at the top
 	endmul:
 		LSR (a1) //final shift is a common operation for all
 	// end MUL
-	MOV	(t, a1)
+	MOV	(t, a1) //TODO: use a1 in main() directly
 	#undef a0
 	#undef a1
 	#undef a2
@@ -394,8 +394,8 @@ int main(void) {
 
 		putchar(acc<<4); //TODO
 		SUBI	(i0, -1)
-		ADC	(i1, zero, !i0)
-		ADC	(i2, zero, !i0&&!i1)
-		ADC	(i3, zero, !i0&&!i1&&!i2)
+		ADC	(i1, zero, !i0) //XXX: must use "sbci i1,-1" in the assembly version
+		ADC	(i2, zero, !i0&&!i1) //          sbci i2,-1
+		ADC	(i3, zero, !i0&&!i1&&!i2) //     sbci i3,-1
 	}
 }
