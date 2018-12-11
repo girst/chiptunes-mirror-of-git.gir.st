@@ -1,13 +1,13 @@
 /* REGISTER NAMES */
-#define zero r16
-#define acc  r17
-#define i0   r18
-#define i1   r19
-#define i2   r20
-#define i3   r21
-#define n    r22
-#define s    r23
-#define t    r24 //==Ml
+#define acc  r16
+#define i0   r17
+#define i1   r18
+#define i2   r19
+#define i3   r20
+#define n    r21
+#define s    r22
+#define t    r23 //==Ml
+;            r24
 ;            r25
 #define x    r26 //==Xlo==Mh
 #define _    r27 //==Xhi
@@ -52,7 +52,7 @@ mod3: ; mod3(Mh.Ml) -> t
 	#define tmp _
 	ADD	Ml, Mh
 	CLR	Mh
-	ADC	Mh, zero
+	ADC	Mh, Mh  ; store carry in Mh
 	MOV	tmp, Ml
 	SWAP	tmp
 	ANDI	tmp, 0x0f
@@ -112,12 +112,19 @@ mod3: ; mod3(Mh.Ml) -> t
 #undef a1
 
 g: ; g(i, t) -> t
+	#define a1 x
+	#define a2 _
+	CLR	a2
+	CLR	a1
+
 	#define tmp _
+	#define zero a1
 	ANDI	t, 0x07
 	MOV	tmp, i2
 	ANDI	tmp, 3
 	CPSE	tmp, zero
 	SUBI	t, -8
+	#undef zero
 	#undef tmp
 
 	;TODO: check correctness!
@@ -125,12 +132,6 @@ g: ; g(i, t) -> t
 	LDI	Xlo, lo8(notes)
 	ADD	Xlo, t ; NOTE: can't overflow, since RAMEND == 0x5F
 	LD	t, X
-
-	#define a1 x
-	#define a2 _
-	#define a0 t
-	CLR	a2
-	CLR	a1
 
 	/* decision tree multiplication saves cycles and (hopefully) reduces code size
 	                     _xxx?
@@ -234,19 +235,18 @@ g: ; g(i, t) -> t
 		LSR a1 ;final shift is a common operation for all
 
 	MOV	t, a1 ;;TODO: use a1 in main() directly
-	#undef a0
 	#undef a1
 	#undef a2
 	RET ; TODO: replace CALL/RET with IJMP?
 
 main: ; setup routine
-	CLR	zero
 	CLR	i0
 	CLR	i1
 	CLR	i2
 	CLR	i3
 	CLR	acc ; we output a dummy sample before the actual first one
 
+	#define zero i0
 	#define one _
 	LDI	one, 1
 	LDI	x, 0x5f ; RAMEND
@@ -270,6 +270,7 @@ main: ; setup routine
 	OUT	TIFR0, one  ; TODO: why?
 	SEI
 	#undef one
+	#undef zero
 	RJMP	sample
 
 loop:
