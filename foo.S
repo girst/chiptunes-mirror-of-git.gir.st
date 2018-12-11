@@ -247,152 +247,155 @@ main:
 	//TODO: setup stack pointer, portb, clock, sleep mode, timer0
 	RJMP	sample
 sample: //TODO: this will probably become the timer0 overflow interrupt handler
-		MOV	(n, i2)
-		LSL	(n)
-		LSL	(n)
-		#define tmp _
-		MOV	(tmp, i1)
-		SWAP	(tmp)
-		ANDI	(tmp, 0x0f)
-		LSR	(tmp)
-		LSR	(tmp)
-		OR	(n, tmp)
-		#undef tmp
-		MOV	(s, i3)
-		LSR	(s)
-		ROR	(s)
-		ANDI	(s, 0x80)
-		#define tmp _
-		MOV	(tmp, i2)
-		LSR	(tmp)
-		OR	(s, tmp)
-		#undef tmp
+	MOV	(n, i2)
+	LSL	(n)
+	LSL	(n)
+	#define tmp _
+	MOV	(tmp, i1)
+	SWAP	(tmp)
+	ANDI	(tmp, 0x0f)
+	LSR	(tmp)
+	LSR	(tmp)
+	OR	(n, tmp)
+	#undef tmp
+	MOV	(s, i3)
+	LSR	(s)
+	ROR	(s)
+	ANDI	(s, 0x80)
+	#define tmp _
+	MOV	(tmp, i2)
+	LSR	(tmp)
+	OR	(s, tmp)
+	#undef tmp
 
-		//voice 1:
-		MOV	(t, n)
-		RCALL	g();
-		SWAP	(t)
-		ANDI	(t, 1)
-		MOV	(acc, t)
+	//voice 1:
+	MOV	(t, n)
+	RCALL	g();
+	SWAP	(t)
+	ANDI	(t, 1)
+	MOV	(acc, t)
 
-		//voice 2:
-		#define tmp _
-		MOV	(tmp, i2)
-		LSL	(tmp)
-		LSL	(tmp)
-		LSL	(tmp)
-		MOV	(t, i1)
-		SWAP	(t)
-		ANDI	(t, 0xf)
-		LSR	(t)
-		OR	(t, tmp)
-		#undef tmp
-		EOR	(t, n)
-		RCALL	g();
-		LSR	(t)
-		LSR	(t)
-		ANDI	(t, 3)
-		AND	(t, s)
-		ADD	(acc, t)
+	//voice 2:
+	#define tmp _
+	MOV	(tmp, i2)
+	LSL	(tmp)
+	LSL	(tmp)
+	LSL	(tmp)
+	MOV	(t, i1)
+	SWAP	(t)
+	ANDI	(t, 0xf)
+	LSR	(t)
+	OR	(t, tmp)
+	#undef tmp
+	EOR	(t, n)
+	RCALL	g();
+	LSR	(t)
+	LSR	(t)
+	ANDI	(t, 3)
+	AND	(t, s)
+	ADD	(acc, t)
 
-		//voice 3:
-		MOV	(Ml, i2)
-		SWAP	(Ml)
-		ANDI	(Ml, 0xf0)
-		LSL	(Ml)
-		#define tmp _
-		MOV	(tmp, i1)
-		LSR	(tmp)
-		LSR	(tmp)
-		LSR	(tmp)
-		OR	(Ml, tmp)
-		#undef tmp
-		MOV	(Mh, i3)
-		SWAP	(Mh)
-		ANDI	(Mh, 0xf0)
-		LSL	(Mh)
-		#define tmp _
-		MOV	(tmp, i2)
-		LSR	(tmp)
-		LSR	(tmp)
-		LSR	(tmp)
-		OR	(Mh, tmp)
-		#undef tmp
-		RCALL	mod3();
-		ADD	(t, n)
-		RCALL	g();
-		LSR	(t)
-		LSR	(t)
-		ANDI	(t, 3)
-		MOV	(x, s)
-		INC	(x)
-		#define tmp _
-		MOV	(tmp, x)
-		LSR	(tmp)
-		LSR	(tmp)
-		ADD	(tmp, x)
-		ROR	(tmp)
-		LSR	(tmp)
-		ADD	(tmp, x)
-		ROR	(tmp)
-		LSR	(tmp)
-		ADD	(tmp, x)
-		ROR	(tmp)
-		LSR	(tmp)
-		AND	(t, tmp)
-		#undef tmp
-		ADD	(acc, t)
+	//voice 3:
+	MOV	(Ml, i2)
+	SWAP	(Ml)
+	ANDI	(Ml, 0xf0)
+	LSL	(Ml)
+	#define tmp _
+	MOV	(tmp, i1)
+	LSR	(tmp)
+	LSR	(tmp)
+	LSR	(tmp)
+	OR	(Ml, tmp)
+	#undef tmp
+	MOV	(Mh, i3)
+	SWAP	(Mh)
+	ANDI	(Mh, 0xf0)
+	LSL	(Mh)
+	#define tmp _
+	MOV	(tmp, i2)
+	LSR	(tmp)
+	LSR	(tmp)
+	LSR	(tmp)
+	OR	(Mh, tmp)
+	#undef tmp
+	RCALL	mod3();
+	ADD	(t, n)
+	RCALL	g();
+	LSR	(t)
+	LSR	(t)
+	ANDI	(t, 3)
+	MOV	(x, s)
+	INC	(x)
+	#define tmp _
+	MOV	(tmp, x)
+	LSR	(tmp)
+	LSR	(tmp)
+	ADD	(tmp, x)
+	ROR	(tmp)
+	LSR	(tmp)
+	ADD	(tmp, x)
+	ROR	(tmp)
+	LSR	(tmp)
+	ADD	(tmp, x)
+	ROR	(tmp)
+	LSR	(tmp)
+	AND	(t, tmp)
+	#undef tmp
+	ADD	(acc, t)
 
-		//voice 4:
-		MOV	(Ml, i2)
-		SWAP	(Ml)
-		ANDI	(Ml, 0xf0)
-		LSL	(Ml)
-		LSL	(Ml)
-		#define tmp _
-		MOV	(tmp, i1)
-		LSR	(tmp)
-		LSR	(tmp)
-		OR	(Ml, tmp)
-		#undef tmp
-		MOV	(Mh, i3)
-		SWAP	(Mh)
-		ANDI	(Mh, 0xf0)
-		LSL	(Mh)
-		LSL	(Mh)
-		#define tmp _
-		MOV	(tmp, i2)
-		LSR	(tmp)
-		LSR	(tmp)
-		OR	(Mh, tmp)
-		#undef tmp
-		RCALL	mod3();
-		SUB	(t, n)
-		NEG	(t)
-		SUBI	(t, -8)
-		RCALL	g();
-		LSR	(t)
-		ANDI	(t, 3)
-		INC	(s)
-		#define tmp _
-                MOV	(tmp, s)
-		LSR	(tmp)
-                ADD	(tmp, s)
-		ROR	(tmp)
-		LSR	(tmp)
-		LSR	(tmp)
-                ADD	(tmp, s)
-		ROR	(tmp)
-                ADD	(tmp, s)
-		ROR	(tmp)
-		LSR	(tmp)
-		LSR	(tmp)
-		AND	(t, tmp)
-		#undef tmp
-		ADD	(acc, t)
+	//voice 4:
+	MOV	(Ml, i2)
+	SWAP	(Ml)
+	ANDI	(Ml, 0xf0)
+	LSL	(Ml)
+	LSL	(Ml)
+	#define tmp _
+	MOV	(tmp, i1)
+	LSR	(tmp)
+	LSR	(tmp)
+	OR	(Ml, tmp)
+	#undef tmp
+	MOV	(Mh, i3)
+	SWAP	(Mh)
+	ANDI	(Mh, 0xf0)
+	LSL	(Mh)
+	LSL	(Mh)
+	#define tmp _
+	MOV	(tmp, i2)
+	LSR	(tmp)
+	LSR	(tmp)
+	OR	(Mh, tmp)
+	#undef tmp
+	RCALL	mod3();
+	SUB	(t, n)
+	NEG	(t)
+	SUBI	(t, -8)
+	RCALL	g();
+	LSR	(t)
+	ANDI	(t, 3)
+	INC	(s)
+	#define tmp _
+	MOV	(tmp, s)
+	LSR	(tmp)
+	ADD	(tmp, s)
+	ROR	(tmp)
+	LSR	(tmp)
+	LSR	(tmp)
+	ADD	(tmp, s)
+	ROR	(tmp)
+	ADD	(tmp, s)
+	ROR	(tmp)
+	LSR	(tmp)
+	LSR	(tmp)
+	AND	(t, tmp)
+	#undef tmp
+	ADD	(acc, t)
 
-		putchar(acc<<4); //TODO
-		SUBI	(i0, -1)
-		ADC	(i1, zero, !i0) //XXX: must use "sbci i1,-1" in the assembly version
-		ADC	(i2, zero, !i0&&!i1) //          sbci i2,-1
-		ADC	(i3, zero, !i0&&!i1&&!i2) //     sbci i3,-1
+	SWAP	acc
+	OUT	OCR0AL, acc
+	SUBI	i0, -1
+	SBCI	i1, -1
+	SBCI	i2, -1
+	SBCI	i3, -1
+
+	rjmp sample //TODO: -> RETI
