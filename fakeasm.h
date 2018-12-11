@@ -20,6 +20,7 @@
 #define LDI(x,n)  x = n;
 #define SBRC(x,b) if (x & 1<<b) //skip if cleared => do if set
 #define SBRS(x,b) if (!(x & 1<<b)) //skip if set => do if not
+#define CPSE(x,y) if (x != y) //compare, skip if equal
 #define CLR(x)    x = 0;
 #define RET       return;
 #define RCALL	  //pseudo

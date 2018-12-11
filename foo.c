@@ -20,6 +20,15 @@ void *Z;	//r30 (Zlo)
 /*...*/		//r31 (Zhi)
 #define Mh x //mod3 vars
 #define Ml t // -"-
+
+// .section .data
+u8 data[] = {
+	/*.byte*/ 0x84, 0x9d, 0xb0, 0x69, 0x9d, 0x84, 0x69, 0x58,
+	/*.byte*/ 0x75, 0x8c, 0xb0, 0x69, 0x8c, 0x75, 0x69, 0x58
+};
+
+// .section .text
+
 //http://homepage.divms.uiowa.edu/~jones/bcd/mod.shtml
 void mod3(void) {
 	// mod3(Mh.Ml) -> t
@@ -51,14 +60,30 @@ void mod3(void) {
 	RET
 	#undef tmp
 }
+//.macro definitions for mul-tree:
+#define always(_bit) //nop; for when a test() is not necessary (see tree)
+#define never(_bit)  //nop; for when a test() is not necessary (see tree)
+#define test(_bit,_jmpto) \
+	SBRC	(t, _bit) \
+	RJMP	(_jmpto)
+#define shift16 \
+	LSR	(a2) \
+	ROR	(a1)
+#define shift8 /*top three bits don't need to be corrrect, so save cycles by not carrying*/ \
+	LSR	(a1)
+#define shift0 //nop; last shift is common
+#define add_shift16 \
+	ADD	(a1, i0) \
+	ADC	(a2, i1, carry) \
+	shift16
+#define add_shift8 /*ditto with carrying*/ \
+	ADD	(a1, i0) \
+	shift8
+#define add_shift0 /*last shift is common*/ \
+	ADD	(a1, i0)
 void g(void) {
 	// g(i, t) -> t
 	// tempvars: `x` and `_`
-static void* mul_jmptable[] = { // replaces data[] section at the top
-	&&mul_84, &&mul_9d, &&mul_b0, &&mul_69, &&mul_9d, &&mul_84, &&mul_69, &&mul_58,
-	&&mul_75, &&mul_8c, &&mul_b0, &&mul_69, &&mul_8c, &&mul_75, &&mul_69, &&mul_58
-	// addresses of mul_* stored in little endian (i.e. { lo(mul_84), hi(mul_84), ... })
-};
 	#define tmp _
 	ANDI	(t, 0x07)
 	MOV	(tmp, i2)
@@ -67,173 +92,128 @@ static void* mul_jmptable[] = { // replaces data[] section at the top
 	CPSE	(tmp, zero)
 	SUBI	(t, -8)
 	#undef tmp
+
+	#define tmp _
+	MOV	(tmp, t) //NOTE: must move value away from `t`, as that is also hi(X)
+	tmp = data[tmp];/*
+	LDI	Xhi, hi8(data)
+	LDI	Xlo, lo8(data)
+	ADD	Xlo, tmp  ;<-- the offset (formerly `t`) into data[]
+	ADC	Xhi, zero
+	LD	tmp, X */
+	MOV	(t, tmp)
+	#undef tmp
+
 	#define a1 x
 	#define a2 _
 	#define a0 t
 	CLR	(a2)
 	CLR	(a1)
-	goto *mul_jmptable[t]; /*
-	  ;NOTE: optimize by placing *X and *Z below address 0xff and get rid of hi byte
-	  LDI  Xlo, lo(mul_jmptable)
-	  LDI  Xhi, hi(mul_jmptable)
-	  ADD  Xlo, t
-	  ADC  Xhi, zero
-	  ADD  Xlo, t      ; advance twice, since it's a 16 bit address
-	  ADC  Xhi, zero
-	  LD   Zlo, X
-	  SUBI Xlo, -1
-	  ADC  Xhi, zero
-	  LD   Zhi, X
-	  IJMP Z */
 
-	//don't care about top three bits (so don't compute them => _)
-	mul_58: // ___1 1000 (24cy)
-		LSR (a2)
-		ROR (a1)
-		LSR (a2)
-		ROR (a1)
-		LSR (a2)
-		ROR (a1)
-		ADD (a1, i0)
-		ADC (a2, i1, carry)
-		LSR (a2)
-		ROR (a1)
+	/* decision tree multiplication saves cycles and (hopefully) reduces code size
+	                     _xxx?
+	                 /           \
+	           _xx?0                _xx1?
+	             |                    |
+	           _x?00                _x?01
+	         /       \             /     \
+	    _?000         _?100      _?001    _?101
+	    /   \         /   \        |      /   \
+	 _0000 _1000   _0100 _1100   _1001 _0101 _1101
+	   |     |       |     |       |     |     |
+	  ...   ...     ...   ...     ...   ...   ...
+	   |     |       |     |       |     |     |
+	   B0    58     84    8C      69     75    9D   */
+		test	(0, m____1)
+	m____0:	shift16
+		never	(1)
+	m___00:	shift16
+		test	(2, m__100)
+	m__000:	shift16
+		test	(3, m_1000)
+	m_0000:	shift16
+		always	(4)
+		add_shift16
+		always	(5)
+		add_shift8
+		never	(6)
+		shift8
+		always	(7)
+		add_shift0
+		RJMP	(end_mul) // calc'd 0xb0
 
-		ADD (a1, i0)
-		ADC (a2, i1, carry)
-		LSR (a2)
-		ROR (a1)
-		LSR (a1)
-		ADD (a1, i0)
-		LSR (a1)
-		RJMP	(endmul)
-	mul_69: // ___0 1001 (26cy)
-		ADD (a1, i0)
-		ADC (a2, i1, carry)
-		LSR (a2)
-		ROR (a1)
-		LSR (a2)
-		ROR (a1)
-		LSR (a2)
-		ROR (a1)
-		ADD (a1, i0)
-		ADC (a2, i1, carry)
-		LSR (a2)
-		ROR (a1)
+	m_1000:	add_shift16
+		always	(4)
+		add_shift16
+		never	(5)
+		shift8
+		always	(6)
+		add_shift8
+		never	(7)
+		shift0
+		RJMP	(end_mul) // calc'd 0x58
 
-		LSR (a2)
-		ROR (a1)
-		ADD (a1, i0)
-		LSR (a1)
-		ADD (a1, i0)
-		LSR (a1)
-		RJMP	(endmul)
-	mul_75: // ___1 0101 (28cy)
-		ADD (a1, i0)
-		ADC (a2, i1, carry)
-		LSR (a2)
-		ROR (a1)
-		LSR (a2)
-		ROR (a1)
-		ADD (a1, i0)
-		ADC (a2, i1, carry)
-		LSR (a2)
-		ROR (a1)
-		LSR (a2)
-		ROR (a1)
+	m__100:	add_shift16
+		test	(3, m_1100)
+	m_0100:	shift16
+		RJMP	(upper_8) //'ll calc 0x84
 
-		ADD (a1, i0)
-		ADC (a2, i1, carry)
-		LSR (a2)
-		ROR (a1)
-		ADD (a1, i0)
-		LSR (a1)
-		ADD (a1, i0)
-		LSR (a1)
-		RJMP	(endmul)
-	mul_84: // ___0 0100 (22cy)
-		LSR (a2)
-		ROR (a1)
-		LSR (a2)
-		ROR (a1)
-		ADD (a1, i0)
-		ADC (a2, i1, carry)
-		LSR (a2)
-		ROR (a1)
-		LSR (a2)
-		ROR (a1)
+	m_1100:	add_shift16
+	upper_8: /* used twice, so deduplicated */
+		never	(4)
+		shift16
+		never	(5)
+		shift8
+		never	(6)
+		shift8
+		always	(7)
+		add_shift0
+		RJMP	(end_mul) // calc'd 0x8c
 
-		LSR (a2)
-		ROR (a1)
-		LSR (a1)
-		LSR (a1)
-		ADD (a1, i0)
-		RJMP	(endmul)
-	mul_8c: // ___0 1100 (24cy)
-		LSR (a2)
-		ROR (a1)
-		LSR (a2)
-		ROR (a1)
-		ADD (a1, i0)
-		ADC (a2, i1, carry)
-		LSR (a2)
-		ROR (a1)
-		ADD (a1, i0)
-		ADC (a2, i1, carry)
-		LSR (a2)
-		ROR (a1)
+	m____1: add_shift16
+		never	(1)
+	m___01:	shift16
+		test	(2, m__101)
+	m__001:	shift16
+		always	(3)
+	m_1001:	add_shift16
+		never	(4)
+		shift16
+		always	(5)
+		add_shift8
+		always	(6)
+		add_shift8
+		never	(7)
+		shift0
+		RJMP	(end_mul) // calc'd 0x69
 
-		LSR (a2)
-		ROR (a1)
-		LSR (a1)
-		LSR (a1)
-		ADD (a1, i0)
-		RJMP	(endmul)
-	mul_9d: // ___1 1101 (28cy)
-		ADD (a1, i0)
-		ADC (a2, i1, carry)
-		LSR (a2)
-		ROR (a1)
-		LSR (a2)
-		ROR (a1)
-		ADD (a1, i0)
-		ADC (a2, i1, carry)
-		LSR (a2)
-		ROR (a1)
-		ADD (a1, i0)
-		ADC (a2, i1, carry)
-		LSR (a2)
-		ROR (a1)
+	m__101:	add_shift16
+		test	(3, m_1101)
+	m_0101:	shift16
+		always	(4)
+		add_shift16
+		always	(5)
+		add_shift8
+		always	(6)
+		add_shift8
+		never	(7)
+		shift0
+		RJMP	(end_mul) // calc'd 0x75
 
-		ADD (a1, i0)
-		ADC (a2, i1, carry)
-		LSR (a2)
-		ROR (a1)
-		LSR (a1)
-		LSR (a1)
-		ADD (a1, i0)
-		RJMP	(endmul)
-	mul_b0: // ___1 0000 (22cy)
-		LSR (a2)
-		ROR (a1)
-		LSR (a2)
-		ROR (a1)
-		LSR (a2)
-		ROR (a1)
-		LSR (a2)
-		ROR (a1)
+	m_1101:	add_shift16
+		always	(4)
+		add_shift16
+		never	(5)
+		shift8
+		never	(6)
+		shift8
+		always	(7)
+		add_shift0
+		// calc'd 0x9d
 
-		ADD (a1, i0)
-		ADC (a2, i1, carry)
-		LSR (a2)
-		ROR (a1)
-		ADD (a1, i0)
-		LSR (a1)
-		LSR (a1)
-		ADD (a1, i0)
-	endmul:
+	end_mul:
 		LSR (a1) //final shift is a common operation for all
-	// end MUL
+
 	MOV	(t, a1) //TODO: use a1 in main() directly
 	#undef a0
 	#undef a1
