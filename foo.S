@@ -1,37 +1,47 @@
-#include <stdio.h>
-#include "fakeasm.h"
-typedef unsigned char u8;
+/* REGISTER NAMES */
+#define zero r16
+#define acc  r17
+#define i0   r18
+#define i1   r19
+#define i2   r20
+#define i3   r21
+#define n    r22
+#define s    r23
+#define _    r24
+;            r25
+#define x    r26 //==Xlo==Mh
+#define t    r27 //==Xhi==Ml
+;            r28
+;            r29
+;            r30 Zlo
+;            r31 Zhi
+; aliases:
+#define Xlo  r26
+#define Xhi  r27
+#define Mh   r26 //mod3 vars
+#define Ml   r27 // -"-
 
-u8 zero;	//r16
-u8 acc;		//r17
-u8 i0;		//r18
-u8 i1;		//r19
-u8 i2;		//r20
-u8 i3;		//r21
-u8 n;		//r22
-u8 s;		//r23
-u8 _;		//r24
-		//r25
-u8 x;/*==Ml*/	//r26 (Xlo)
-u8 t;/*==Mh*/	//r27 (Xhi)
-		//r28
-		//r29
-void *Z;	//r30 (Zlo)
-/*...*/		//r31 (Zhi)
-#define Mh x //mod3 vars
-#define Ml t // -"-
+/* I/O REGISTERS */
+OCR0AL = 0x26
+DDRB   = 0x01
+PUEB   = 0x03
+SPL    = 0x3D
+SPH    = 0x3E
+CCP    = 0x3C
+CLKPSR = 0x36
+SMCR   = 0x3A
+TCCR0A = 0x2E
+TCCR0B = 0x2D
+TIMSK0 = 0x2B
+TIFR0  = 0x2A
 
-// .section .data
-u8 data[] = {
-	/*.byte*/ 0x84, 0x9d, 0xb0, 0x69, 0x9d, 0x84, 0x69, 0x58,
-	/*.byte*/ 0x75, 0x8c, 0xb0, 0x69, 0x8c, 0x75, 0x69, 0x58
-};
+.section .data
+	.byte 0x84, 0x9d, 0xb0, 0x69, 0x9d, 0x84, 0x69, 0x58
+	.byte 0x75, 0x8c, 0xb0, 0x69, 0x8c, 0x75, 0x69, 0x58
 
-// .section .text
+.section .text
 
-//http://homepage.divms.uiowa.edu/~jones/bcd/mod.shtml
-void mod3(void) {
-	// mod3(Mh.Ml) -> t
+mod3: ; mod3(Mh.Ml) -> t
 	#define tmp _
 	ADD	(Ml, Mh)
 	CLR	(Mh)
@@ -59,31 +69,39 @@ void mod3(void) {
 	skip:;
 	RET
 	#undef tmp
-}
-//.macro definitions for mul-tree:
-#define always(_bit) //nop; for when a test() is not necessary (see tree)
-#define never(_bit)  //nop; for when a test() is not necessary (see tree)
-#define test(_bit,_jmpto) \
-	SBRC	(t, _bit) \
-	RJMP	(_jmpto)
-#define shift16 \
-	LSR	(a2) \
-	ROR	(a1)
-#define shift8 /*top three bits don't need to be corrrect, so save cycles by not carrying*/ \
-	LSR	(a1)
-#define shift0 //nop; last shift is common
-#define add_shift16 \
-	ADD	(a1, i0) \
-	ADC	(a2, i1, carry) \
+
+; definitions to mul-tree readable:
+.macro always _bit ; nop; for when a test() is not necessary (see tree)
+.endm
+.macro never _bit  ; nop; for when a test() is not necessary (see tree)
+.endm
+.macro test _bit,_jmpto
+	SBRC	t, _bit
+	RJMP	_jmpto
+.endm
+.macro shift16
+	LSR	a2
+	ROR	a1
+.endm
+.macro shift8 ; top three bits don't need to be corrrect, so save cycles by not carrying
+	LSR	a1
+.endm
+.macro shift0 ; nop; last shift is common
+.endm
+.macro add_shift16
+	ADD	a1, i0
+	ADC	a2, i1
 	shift16
-#define add_shift8 /*ditto with carrying*/ \
-	ADD	(a1, i0) \
+.endm
+.macro add_shift8 ; ditto with carrying
+	ADD	a1, i0
 	shift8
-#define add_shift0 /*last shift is common*/ \
-	ADD	(a1, i0)
-void g(void) {
-	// g(i, t) -> t
-	// tempvars: `x` and `_`
+.endm
+.macro add_shift0 ; last shift is common
+	ADD	a1, i0
+.endm
+
+g: ; g(i, t) -> t
 	#define tmp _
 	ANDI	(t, 0x07)
 	MOV	(tmp, i2)
@@ -219,15 +237,16 @@ void g(void) {
 	#undef a1
 	#undef a2
 	RET //TODO: replace CALL/RET with IJMP? (requires undoing goto-mul-hack)
-};
 
-int main(void) {
+main:
 	CLR	(zero)
 	CLR	(i0)
 	CLR	(i1)
 	CLR	(i2)
 	CLR	(i3)
-	for (;;) {
+	//TODO: setup stack pointer, portb, clock, sleep mode, timer0
+	RJMP	sample
+sample: //TODO: this will probably become the timer0 overflow interrupt handler
 		MOV	(n, i2)
 		LSL	(n)
 		LSL	(n)
@@ -377,5 +396,3 @@ int main(void) {
 		ADC	(i1, zero, !i0) //XXX: must use "sbci i1,-1" in the assembly version
 		ADC	(i2, zero, !i0&&!i1) //          sbci i2,-1
 		ADC	(i3, zero, !i0&&!i1&&!i2) //     sbci i3,-1
-	}
-}
