@@ -1,11 +1,14 @@
-a.out: foo.c
-	gcc foo.c
-	./a.out |head -c31457280 |diff -s - full-orig.pcm
-	# NOTE: starts to diverge after 33423360 bytes
-	git add foo.c
-	git commit -m "new version"
+.PHONY: all clean flash
+CHIP ?= 9
 
-.PHONY: test
-test:
-	gcc foo.c
-	./a.out |head -c31457280 |diff -s - full-orig.pcm
+all: foo.elf
+
+foo.elf: foo.S
+	avr-gcc -Os -nostdlib -mmcu=attiny$(CHIP) -o $@ $<
+	avr-size -C --mcu=attiny$(CHIP) $@
+
+flash: foo.elf
+	avrdude -cusbasp -Pusb -pt$(CHIP) -Uflash:w:$<:e
+
+clean:
+	rm -f foo.elf
