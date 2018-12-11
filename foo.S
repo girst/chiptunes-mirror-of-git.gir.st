@@ -88,6 +88,10 @@ mod3: ; mod3(Mh.Ml) -> t
 	SBRC	t, \_bit
 	RJMP	\_jmpto
 .endm
+.macro i_test _bit,_jmpto ; inverted test (for reordered 0x8_)
+	SBRS	t, \_bit
+	RJMP	\_jmpto
+.endm
 .macro shift16
 	LSR	a2
 	ROR	a1
@@ -177,12 +181,9 @@ g: ; g(i, t) -> t
 		RJMP	end_mul ; calc'd 0x58
 
 	m__100:	add16 $ shift16
-		test	3, m_1100
+		i_test	3, m_0100
+	m_1100:	add16
 	m_0100:	shift16
-		RJMP	upper_8 ;'ll calc 0x84
-;TODO: combine shift16 above with add_shift16 below to save progmem
-	m_1100:	add16 $ shift16
-	upper_8: ; used twice, so deduplicated
 		never	4
 		shift16
 		never	5
@@ -191,7 +192,7 @@ g: ; g(i, t) -> t
 		shift8
 		always	7
 		add8 $ shift0
-		RJMP	end_mul ; calc'd 0x8c
+		RJMP	end_mul ; calc'd 0x8c / 0x84
 
 	m____1: add16 $ shift16
 		never	1
