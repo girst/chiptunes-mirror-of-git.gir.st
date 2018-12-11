@@ -29,6 +29,7 @@ SPL    = 0x3D
 SPH    = 0x3E
 CCP    = 0x3C
 CLKPSR = 0x36
+WDTCSR = 0x31
 SMCR   = 0x3A
 TCCR0A = 0x2E
 TCCR0B = 0x2D
@@ -41,6 +42,10 @@ data:
 	.byte 0x75, 0x8c, 0xb0, 0x69, 0x8c, 0x75, 0x69, 0x58
 
 .section .text
+.org 0x0000 ; RESET interrupt
+	RJMP	main
+.org 0x0008 ; TIM0_OVF interrupt
+	RJMP	sample
 
 mod3: ; mod3(Mh.Ml) -> t
 	#define tmp _
@@ -242,15 +247,47 @@ g: ; g(i, t) -> t
 	#undef a2
 	RET ; TODO: replace CALL/RET with IJMP?
 
-main:
+main: ; setup routine
 	CLR	zero
 	CLR	i0
 	CLR	i1
 	CLR	i2
 	CLR	i3
-	;;TODO: setup stack pointer, portb, clock, sleep mode, timer0
+	CLR	acc ; we output a dummy sample before the actual first one
+
+	#define one _
+	LDI	one, 1
+	LDI	x, 0x5f ; RAMEND
+	OUT	SPL, x      ; init stack ptr
+	OUT	SPH, zero   ; -"-
+	OUT	PUEB, zero  ; disable pullups
+	OUT	DDRB, one   ; PORTB[0] as output
+	LDI	x, 0xd8
+	OUT	CCP, x      ; change protected ioregs
+	OUT	CLKPSR, one ; clock prescaler 1/2 (4Mhz)
+	OUT	WDTCSR, zero; turn off watchdog ;;TODO: incomplete - see datasheet pg48
+	; OUT	SMCR, 2     ; sleep mode 'power down' ('idle' (default) has faster response time)
+
+	;set timer/counter0 to 8bit fastpwm, non-inverting, no prescaler
+	LDI	x, 0x81
+	OUT	TCCR0A, x
+	LDI	x, 0x09
+	OUT	TCCR0B, x
+	OUT	TIMSK0, one ; enable tim0_ovf
+	OUT	TIFR0, one  ; TODO: why?
+	SEI
+	#undef one
 	RJMP	sample
-sample: ;;TODO: this will probably become the timer0 overflow interrupt handler
+
+loop:
+	SLEEP ; wait for interrupt
+	RJMP	loop
+
+sample:
+	; potential TODO: softcounter in r28 to only update duty cicle every n iterations
+	; potential TODO: save/restore status register (SREG=0x3f)
+	OUT	OCR0AL, acc ; start by outputting a sample, because routine has variable runtime
+
 	MOV	n, i2
 	LSL	n
 	LSL	n
@@ -395,11 +432,11 @@ sample: ;;TODO: this will probably become the timer0 overflow interrupt handler
 	#undef tmp
 	ADD	acc, t
 
-	SWAP	acc
-	OUT	OCR0AL, acc
+	SWAP	acc ; acc<<4, to be passed to OCR0AL
+
 	SUBI	i0, -1
 	SBCI	i1, -1
 	SBCI	i2, -1
 	SBCI	i3, -1
 
-	rjmp sample ;;TODO: -> RETI
+	RETI ; reenables interrupts
