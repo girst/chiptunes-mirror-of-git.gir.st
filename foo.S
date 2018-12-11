@@ -97,16 +97,11 @@ mod3: ; mod3(Mh.Ml) -> t
 .endm
 .macro shift0 ; nop; last shift is common
 .endm
-.macro add_shift16
+.macro add16
 	ADD	a1, i0
 	ADC	a2, i1
-	shift16
 .endm
-.macro add_shift8 ; ditto with carrying
-	ADD	a1, i0
-	shift8
-.endm
-.macro add_shift0 ; last shift is common
+.macro add8 ; ditto with carrying
 	ADD	a1, i0
 .endm
 #undef a2
@@ -161,32 +156,32 @@ g: ; g(i, t) -> t
 		test	3, m_1000
 	m_0000:	shift16
 		always	4
-		add_shift16
+		add16 $ shift16
 		always	5
-		add_shift8
+		add8 $ shift8
 		never	6
 		shift8
 		always	7
-		add_shift0
+		add8 $ shift0
 		RJMP	end_mul ; calc'd 0xb0
 
-	m_1000:	add_shift16
+	m_1000:	add16 $ shift16
 		always	4
-		add_shift16
+		add16 $ shift16
 		never	5
 		shift8
 		always	6
-		add_shift8
+		add8 $ shift8
 		never	7
 		shift0
 		RJMP	end_mul ; calc'd 0x58
 
-	m__100:	add_shift16
+	m__100:	add16 $ shift16
 		test	3, m_1100
 	m_0100:	shift16
 		RJMP	upper_8 ;'ll calc 0x84
 ;TODO: combine shift16 above with add_shift16 below to save progmem
-	m_1100:	add_shift16
+	m_1100:	add16 $ shift16
 	upper_8: ; used twice, so deduplicated
 		never	4
 		shift16
@@ -195,48 +190,48 @@ g: ; g(i, t) -> t
 		never	6
 		shift8
 		always	7
-		add_shift0
+		add8 $ shift0
 		RJMP	end_mul ; calc'd 0x8c
 
-	m____1: add_shift16
+	m____1: add16 $ shift16
 		never	1
 	m___01:	shift16
 		test	2, m__101
 	m__001:	shift16
 		always	3
-	m_1001:	add_shift16
+	m_1001:	add16 $ shift16
 		never	4
 		shift16
 		always	5
-		add_shift8
+		add8 $ shift8
 		always	6
-		add_shift8
+		add8 $ shift8
 		never	7
 		shift0
 		RJMP	end_mul ; calc'd 0x69
 
-	m__101:	add_shift16
+	m__101:	add16 $ shift16
 		test	3, m_1101
 	m_0101:	shift16
 		always	4
-		add_shift16
+		add16 $ shift16
 		always	5
-		add_shift8
+		add8 $ shift8
 		always	6
-		add_shift8
+		add8 $ shift8
 		never	7
 		shift0
 		RJMP	end_mul ; calc'd 0x75
 
-	m_1101:	add_shift16
+	m_1101:	add16 $ shift16
 		always	4
-		add_shift16
+		add16 $ shift16
 		never	5
 		shift8
 		never	6
 		shift8
 		always	7
-		add_shift0
+		add8 $ shift0
 		; calc'd 0x9d
 
 	end_mul:
@@ -262,8 +257,8 @@ main: ; setup routine
 	OUT	SPL, x      ; init stack ptr
 	OUT	SPH, zero   ; -"-
 	OUT	PUEB, zero  ; disable pullups
-	LDI	x, 0x05     ; PORTB0:pwm, PORTB2:debug
-	OUT	DDRB, x
+	LDI	x, 0x05
+	OUT	DDRB, x     ; PORTB0:pwm, PORTB2:debug
 	LDI	x, 0xd8
 	OUT	CCP, x      ; change protected ioregs
 	OUT	CLKPSR, one ; clock prescaler 1/2 (4Mhz)
