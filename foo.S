@@ -24,6 +24,7 @@
 /* I/O REGISTERS */
 OCR0AL = 0x26
 DDRB   = 0x01
+PORTB  = 0x02
 PUEB   = 0x03
 SPL    = 0x3D
 SPH    = 0x3E
@@ -116,17 +117,17 @@ g: ; g(i, t) -> t
 	ANDI	t, 0x07
 	MOV	tmp, i2
 	ANDI	tmp, 3
-	TST	tmp
 	CPSE	tmp, zero
 	SUBI	t, -8
 	#undef tmp
 
+	;TODO: check correctness!
 	#define tmp _
 	MOV	tmp, t  ; NOTE: must move value away from `t`, as that is also hi(X)
-	LDI	Xhi, hi8(data)  ; TODO: can skip if &data < 0xff (it is)
+	LDI	Xhi, hi8(data)  ; hi(data) always zero, but still need to clear the register
 	LDI	Xlo, lo8(data)
 	ADD	Xlo, tmp  ;<-- the offset (formerly `t`) into data[]
-	ADC	Xhi, zero  ; ditto skip
+	;ADC	Xhi, zero  ; data == 0x40  t <= 0x10, so can never overflow
 	LD	tmp, X
 	MOV	t, tmp
 	#undef tmp
@@ -184,7 +185,7 @@ g: ; g(i, t) -> t
 		test	3, m_1100
 	m_0100:	shift16
 		RJMP	upper_8 ;'ll calc 0x84
-
+;TODO: combine shift16 above with add_shift16 below to save progmem
 	m_1100:	add_shift16
 	upper_8: ; used twice, so deduplicated
 		never	4
@@ -261,7 +262,8 @@ main: ; setup routine
 	OUT	SPL, x      ; init stack ptr
 	OUT	SPH, zero   ; -"-
 	OUT	PUEB, zero  ; disable pullups
-	OUT	DDRB, one   ; PORTB[0] as output
+	LDI	x, 0x05     ; PORTB0:pwm, PORTB2:debug
+	OUT	DDRB, x
 	LDI	x, 0xd8
 	OUT	CCP, x      ; change protected ioregs
 	OUT	CLKPSR, one ; clock prescaler 1/2 (4Mhz)
@@ -284,9 +286,11 @@ loop:
 	RJMP	loop
 
 sample:
-	; potential TODO: softcounter in r28 to only update duty cicle every n iterations
-	; potential TODO: save/restore status register (SREG=0x3f)
+	; potential TODO: softcounter in r25 to only update duty cicle every n iterations
+	; potential TODO: save/restore status register (SREG=0x3f) (only if something in mainloop)
+
 	OUT	OCR0AL, acc ; start by outputting a sample, because routine has variable runtime
+	SBI	PORTB, 2 ; to measure runtime
 
 	MOV	n, i2
 	LSL	n
@@ -439,4 +443,6 @@ sample:
 	SBCI	i2, -1
 	SBCI	i3, -1
 
+	CBI	PORTB, 2 ; end runtime measurement
+	;TODO: to reduce jitter: clear pending tim0_ovf (TIFR0[TOV0] <- 1) ?
 	RETI ; reenables interrupts
