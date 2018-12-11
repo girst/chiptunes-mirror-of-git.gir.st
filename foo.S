@@ -7,10 +7,10 @@
 #define i3   r21
 #define n    r22
 #define s    r23
-#define _    r24
+#define t    r24 //==Ml
 ;            r25
 #define x    r26 //==Xlo==Mh
-#define t    r27 //==Xhi==Ml
+#define _    r27 //==Xhi
 ;            r28
 ;            r29
 ;            r30 Zlo
@@ -18,8 +18,8 @@
 ; aliases:
 #define Xlo  r26
 #define Xhi  r27
-#define Mh   r26 //mod3 vars
-#define Ml   r27 // -"-
+#define Ml   r24 //mod3 vars
+#define Mh   r26 // -"-
 
 /* I/O REGISTERS */
 OCR0AL = 0x26
@@ -38,7 +38,7 @@ TIMSK0 = 0x2B
 TIFR0  = 0x2A
 
 .section .data
-data:
+notes:
 	.byte 0x84, 0x9d, 0xb0, 0x69, 0x9d, 0x84, 0x69, 0x58
 	.byte 0x75, 0x8c, 0xb0, 0x69, 0x8c, 0x75, 0x69, 0x58
 
@@ -121,15 +121,10 @@ g: ; g(i, t) -> t
 	#undef tmp
 
 	;TODO: check correctness!
-	#define tmp _
-	MOV	tmp, t  ; NOTE: must move value away from `t`, as that is also hi(X)
-	LDI	Xhi, hi8(data)  ; hi(data) always zero, but still need to clear the register
-	LDI	Xlo, lo8(data)
-	ADD	Xlo, tmp  ;<-- the offset (formerly `t`) into data[]
-	;ADC	Xhi, zero  ; data == 0x40  t <= 0x10, so can never overflow
-	LD	tmp, X
-	MOV	t, tmp
-	#undef tmp
+	LDI	Xhi, hi8(notes)  ; hi(notes) always zero, but still need to clear the register
+	LDI	Xlo, lo8(notes)
+	ADD	Xlo, t ; NOTE: can't overflow, since RAMEND == 0x5F
+	LD	t, X
 
 	#define a1 x
 	#define a2 _
