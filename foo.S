@@ -43,30 +43,30 @@ TIFR0  = 0x2A
 
 mod3: ; mod3(Mh.Ml) -> t
 	#define tmp _
-	ADD	(Ml, Mh)
-	CLR	(Mh)
-	ADC	(Mh, zero, carry) //Mh only holds the carry bit
-	MOV	(tmp, Ml)
-	SWAP	(tmp)
-	ANDI	(tmp, 0x0f)
-	SWAP	(Mh)
-	OR	(tmp, Mh)
-	ANDI	(Ml, 0x0f)
-	ADD	(Ml, tmp)
-	MOV	(tmp, Ml)
-	LSR	(tmp)
-	LSR	(tmp)
-	ANDI	(Ml, 0x03)
-	ADD	(Ml, tmp)
-	MOV	(tmp, Ml)
-	LSR	(tmp)
-	LSR	(tmp)
-	ANDI	(Ml, 0x03)
-	ADD	(Ml, tmp)
-	CPI	(Ml, 3)
-	BRPL	(skip)
-	SUBI	(Ml, 3)
-	skip:;
+	ADD	Ml, Mh
+	CLR	Mh
+	ADC	Mh, zero
+	MOV	tmp, Ml
+	SWAP	tmp
+	ANDI	tmp, 0x0f
+	SWAP	Mh
+	OR	tmp, Mh
+	ANDI	Ml, 0x0f
+	ADD	Ml, tmp
+	MOV	tmp, Ml
+	LSR	tmp
+	LSR	tmp
+	ANDI	Ml, 0x03
+	ADD	Ml, tmp
+	MOV	tmp, Ml
+	LSR	tmp
+	LSR	tmp
+	ANDI	Ml, 0x03
+	ADD	Ml, tmp
+	CPI	Ml, 3
+	BRPL	skip
+	SUBI	Ml, 3
+	skip:
 	RET
 	#undef tmp
 
@@ -103,30 +103,29 @@ mod3: ; mod3(Mh.Ml) -> t
 
 g: ; g(i, t) -> t
 	#define tmp _
-	ANDI	(t, 0x07)
-	MOV	(tmp, i2)
-	ANDI	(tmp, 3)
-	TST	(tmp)
-	CPSE	(tmp, zero)
-	SUBI	(t, -8)
+	ANDI	t, 0x07
+	MOV	tmp, i2
+	ANDI	tmp, 3
+	TST	tmp
+	CPSE	tmp, zero
+	SUBI	t, -8
 	#undef tmp
 
 	#define tmp _
-	MOV	(tmp, t) //NOTE: must move value away from `t`, as that is also hi(X)
-	tmp = data[tmp];/*
-	LDI	Xhi, hi8(data)
+	MOV	tmp, t  ; NOTE: must move value away from `t`, as that is also hi(X)
+	LDI	Xhi, hi8(data)  ; TODO: can skip if &data < 0xff (it is)
 	LDI	Xlo, lo8(data)
 	ADD	Xlo, tmp  ;<-- the offset (formerly `t`) into data[]
-	ADC	Xhi, zero
-	LD	tmp, X */
-	MOV	(t, tmp)
+	ADC	Xhi, zero  ; ditto skip
+	LD	tmp, X
+	MOV	t, tmp
 	#undef tmp
 
 	#define a1 x
 	#define a2 _
 	#define a0 t
-	CLR	(a2)
-	CLR	(a1)
+	CLR	a2
+	CLR	a1
 
 	/* decision tree multiplication saves cycles and (hopefully) reduces code size
 	                     _xxx?
@@ -142,254 +141,254 @@ g: ; g(i, t) -> t
 	  ...   ...     ...   ...     ...   ...   ...
 	   |     |       |     |       |     |     |
 	   B0    58     84    8C      69     75    9D   */
-		test	(0, m____1)
+		test	0, m____1
 	m____0:	shift16
-		never	(1)
+		never	1
 	m___00:	shift16
-		test	(2, m__100)
+		test	2, m__100
 	m__000:	shift16
-		test	(3, m_1000)
+		test	3, m_1000
 	m_0000:	shift16
-		always	(4)
+		always	4
 		add_shift16
-		always	(5)
+		always	5
 		add_shift8
-		never	(6)
+		never	6
 		shift8
-		always	(7)
+		always	7
 		add_shift0
-		RJMP	(end_mul) // calc'd 0xb0
+		RJMP	end_mul ; calc'd 0xb0
 
 	m_1000:	add_shift16
-		always	(4)
+		always	4
 		add_shift16
-		never	(5)
+		never	5
 		shift8
-		always	(6)
+		always	6
 		add_shift8
-		never	(7)
+		never	7
 		shift0
-		RJMP	(end_mul) // calc'd 0x58
+		RJMP	end_mul ; calc'd 0x58
 
 	m__100:	add_shift16
-		test	(3, m_1100)
+		test	3, m_1100
 	m_0100:	shift16
-		RJMP	(upper_8) //'ll calc 0x84
+		RJMP	upper_8 ;'ll calc 0x84
 
 	m_1100:	add_shift16
-	upper_8: /* used twice, so deduplicated */
-		never	(4)
+	upper_8: ; used twice, so deduplicated
+		never	4
 		shift16
-		never	(5)
+		never	5
 		shift8
-		never	(6)
+		never	6
 		shift8
-		always	(7)
+		always	7
 		add_shift0
-		RJMP	(end_mul) // calc'd 0x8c
+		RJMP	end_mul ; calc'd 0x8c
 
 	m____1: add_shift16
-		never	(1)
+		never	1
 	m___01:	shift16
-		test	(2, m__101)
+		test	2, m__101
 	m__001:	shift16
-		always	(3)
+		always	3
 	m_1001:	add_shift16
-		never	(4)
+		never	4
 		shift16
-		always	(5)
+		always	5
 		add_shift8
-		always	(6)
+		always	6
 		add_shift8
-		never	(7)
+		never	7
 		shift0
-		RJMP	(end_mul) // calc'd 0x69
+		RJMP	end_mul ; calc'd 0x69
 
 	m__101:	add_shift16
-		test	(3, m_1101)
+		test	3, m_1101
 	m_0101:	shift16
-		always	(4)
+		always	4
 		add_shift16
-		always	(5)
+		always	5
 		add_shift8
-		always	(6)
+		always	6
 		add_shift8
-		never	(7)
+		never	7
 		shift0
-		RJMP	(end_mul) // calc'd 0x75
+		RJMP	end_mul ; calc'd 0x75
 
 	m_1101:	add_shift16
-		always	(4)
+		always	4
 		add_shift16
-		never	(5)
+		never	5
 		shift8
-		never	(6)
+		never	6
 		shift8
-		always	(7)
+		always	7
 		add_shift0
-		// calc'd 0x9d
+		; calc'd 0x9d
 
 	end_mul:
-		LSR (a1) //final shift is a common operation for all
+		LSR a1 ;final shift is a common operation for all
 
-	MOV	(t, a1) //TODO: use a1 in main() directly
+	MOV	t, a1 ;;TODO: use a1 in main() directly
 	#undef a0
 	#undef a1
 	#undef a2
-	RET //TODO: replace CALL/RET with IJMP? (requires undoing goto-mul-hack)
+	RET ; TODO: replace CALL/RET with IJMP?
 
 main:
-	CLR	(zero)
-	CLR	(i0)
-	CLR	(i1)
-	CLR	(i2)
-	CLR	(i3)
-	//TODO: setup stack pointer, portb, clock, sleep mode, timer0
+	CLR	zero
+	CLR	i0
+	CLR	i1
+	CLR	i2
+	CLR	i3
+	;;TODO: setup stack pointer, portb, clock, sleep mode, timer0
 	RJMP	sample
-sample: //TODO: this will probably become the timer0 overflow interrupt handler
-	MOV	(n, i2)
-	LSL	(n)
-	LSL	(n)
+sample: ;;TODO: this will probably become the timer0 overflow interrupt handler
+	MOV	n, i2
+	LSL	n
+	LSL	n
 	#define tmp _
-	MOV	(tmp, i1)
-	SWAP	(tmp)
-	ANDI	(tmp, 0x0f)
-	LSR	(tmp)
-	LSR	(tmp)
-	OR	(n, tmp)
+	MOV	tmp, i1
+	SWAP	tmp
+	ANDI	tmp, 0x0f
+	LSR	tmp
+	LSR	tmp
+	OR	n, tmp
 	#undef tmp
-	MOV	(s, i3)
-	LSR	(s)
-	ROR	(s)
-	ANDI	(s, 0x80)
+	MOV	s, i3
+	LSR	s
+	ROR	s
+	ANDI	s, 0x80
 	#define tmp _
-	MOV	(tmp, i2)
-	LSR	(tmp)
-	OR	(s, tmp)
+	MOV	tmp, i2
+	LSR	tmp
+	OR	s, tmp
 	#undef tmp
 
-	//voice 1:
-	MOV	(t, n)
-	RCALL	g();
-	SWAP	(t)
-	ANDI	(t, 1)
-	MOV	(acc, t)
+	; voice 1:
+	MOV	t, n
+	RCALL	g
+	SWAP	t
+	ANDI	t, 1
+	MOV	acc, t
 
-	//voice 2:
+	; voice 2:
 	#define tmp _
-	MOV	(tmp, i2)
-	LSL	(tmp)
-	LSL	(tmp)
-	LSL	(tmp)
-	MOV	(t, i1)
-	SWAP	(t)
-	ANDI	(t, 0xf)
-	LSR	(t)
-	OR	(t, tmp)
+	MOV	tmp, i2
+	LSL	tmp
+	LSL	tmp
+	LSL	tmp
+	MOV	t, i1
+	SWAP	t
+	ANDI	t, 0xf
+	LSR	t
+	OR	t, tmp
 	#undef tmp
-	EOR	(t, n)
-	RCALL	g();
-	LSR	(t)
-	LSR	(t)
-	ANDI	(t, 3)
-	AND	(t, s)
-	ADD	(acc, t)
+	EOR	t, n
+	RCALL	g
+	LSR	t
+	LSR	t
+	ANDI	t, 3
+	AND	t, s
+	ADD	acc, t
 
-	//voice 3:
-	MOV	(Ml, i2)
-	SWAP	(Ml)
-	ANDI	(Ml, 0xf0)
-	LSL	(Ml)
+	; voice 3:
+	MOV	Ml, i2
+	SWAP	Ml
+	ANDI	Ml, 0xf0
+	LSL	Ml
 	#define tmp _
-	MOV	(tmp, i1)
-	LSR	(tmp)
-	LSR	(tmp)
-	LSR	(tmp)
-	OR	(Ml, tmp)
+	MOV	tmp, i1
+	LSR	tmp
+	LSR	tmp
+	LSR	tmp
+	OR	Ml, tmp
 	#undef tmp
-	MOV	(Mh, i3)
-	SWAP	(Mh)
-	ANDI	(Mh, 0xf0)
-	LSL	(Mh)
+	MOV	Mh, i3
+	SWAP	Mh
+	ANDI	Mh, 0xf0
+	LSL	Mh
 	#define tmp _
-	MOV	(tmp, i2)
-	LSR	(tmp)
-	LSR	(tmp)
-	LSR	(tmp)
-	OR	(Mh, tmp)
+	MOV	tmp, i2
+	LSR	tmp
+	LSR	tmp
+	LSR	tmp
+	OR	Mh, tmp
 	#undef tmp
-	RCALL	mod3();
-	ADD	(t, n)
-	RCALL	g();
-	LSR	(t)
-	LSR	(t)
-	ANDI	(t, 3)
-	MOV	(x, s)
-	INC	(x)
+	RCALL	mod3
+	ADD	t, n
+	RCALL	g
+	LSR	t
+	LSR	t
+	ANDI	t, 3
+	MOV	x, s
+	INC	x
 	#define tmp _
-	MOV	(tmp, x)
-	LSR	(tmp)
-	LSR	(tmp)
-	ADD	(tmp, x)
-	ROR	(tmp)
-	LSR	(tmp)
-	ADD	(tmp, x)
-	ROR	(tmp)
-	LSR	(tmp)
-	ADD	(tmp, x)
-	ROR	(tmp)
-	LSR	(tmp)
-	AND	(t, tmp)
+	MOV	tmp, x
+	LSR	tmp
+	LSR	tmp
+	ADD	tmp, x
+	ROR	tmp
+	LSR	tmp
+	ADD	tmp, x
+	ROR	tmp
+	LSR	tmp
+	ADD	tmp, x
+	ROR	tmp
+	LSR	tmp
+	AND	t, tmp
 	#undef tmp
-	ADD	(acc, t)
+	ADD	acc, t
 
-	//voice 4:
-	MOV	(Ml, i2)
-	SWAP	(Ml)
-	ANDI	(Ml, 0xf0)
-	LSL	(Ml)
-	LSL	(Ml)
+	; voice 4:
+	MOV	Ml, i2
+	SWAP	Ml
+	ANDI	Ml, 0xf0
+	LSL	Ml
+	LSL	Ml
 	#define tmp _
-	MOV	(tmp, i1)
-	LSR	(tmp)
-	LSR	(tmp)
-	OR	(Ml, tmp)
+	MOV	tmp, i1
+	LSR	tmp
+	LSR	tmp
+	OR	Ml, tmp
 	#undef tmp
-	MOV	(Mh, i3)
-	SWAP	(Mh)
-	ANDI	(Mh, 0xf0)
-	LSL	(Mh)
-	LSL	(Mh)
+	MOV	Mh, i3
+	SWAP	Mh
+	ANDI	Mh, 0xf0
+	LSL	Mh
+	LSL	Mh
 	#define tmp _
-	MOV	(tmp, i2)
-	LSR	(tmp)
-	LSR	(tmp)
-	OR	(Mh, tmp)
+	MOV	tmp, i2
+	LSR	tmp
+	LSR	tmp
+	OR	Mh, tmp
 	#undef tmp
-	RCALL	mod3();
-	SUB	(t, n)
-	NEG	(t)
-	SUBI	(t, -8)
-	RCALL	g();
-	LSR	(t)
-	ANDI	(t, 3)
-	INC	(s)
+	RCALL	mod3
+	SUB	t, n
+	NEG	t
+	SUBI	t, -8
+	RCALL	g
+	LSR	t
+	ANDI	t, 3
+	INC	s
 	#define tmp _
-	MOV	(tmp, s)
-	LSR	(tmp)
-	ADD	(tmp, s)
-	ROR	(tmp)
-	LSR	(tmp)
-	LSR	(tmp)
-	ADD	(tmp, s)
-	ROR	(tmp)
-	ADD	(tmp, s)
-	ROR	(tmp)
-	LSR	(tmp)
-	LSR	(tmp)
-	AND	(t, tmp)
+	MOV	tmp, s
+	LSR	tmp
+	ADD	tmp, s
+	ROR	tmp
+	LSR	tmp
+	LSR	tmp
+	ADD	tmp, s
+	ROR	tmp
+	ADD	tmp, s
+	ROR	tmp
+	LSR	tmp
+	LSR	tmp
+	AND	t, tmp
 	#undef tmp
-	ADD	(acc, t)
+	ADD	acc, t
 
 	SWAP	acc
 	OUT	OCR0AL, acc
@@ -398,4 +397,4 @@ sample: //TODO: this will probably become the timer0 overflow interrupt handler
 	SBCI	i2, -1
 	SBCI	i3, -1
 
-	rjmp sample //TODO: -> RETI
+	rjmp sample ;;TODO: -> RETI
