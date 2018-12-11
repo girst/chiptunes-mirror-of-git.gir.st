@@ -36,6 +36,7 @@ TIMSK0 = 0x2B
 TIFR0  = 0x2A
 
 .section .data
+data:
 	.byte 0x84, 0x9d, 0xb0, 0x69, 0x9d, 0x84, 0x69, 0x58
 	.byte 0x75, 0x8c, 0xb0, 0x69, 0x8c, 0x75, 0x69, 0x58
 
@@ -71,13 +72,15 @@ mod3: ; mod3(Mh.Ml) -> t
 	#undef tmp
 
 ; definitions to mul-tree readable:
+#define a1 x
+#define a2 _
 .macro always _bit ; nop; for when a test() is not necessary (see tree)
 .endm
 .macro never _bit  ; nop; for when a test() is not necessary (see tree)
 .endm
 .macro test _bit,_jmpto
-	SBRC	t, _bit
-	RJMP	_jmpto
+	SBRC	t, \_bit
+	RJMP	\_jmpto
 .endm
 .macro shift16
 	LSR	a2
@@ -100,6 +103,8 @@ mod3: ; mod3(Mh.Ml) -> t
 .macro add_shift0 ; last shift is common
 	ADD	a1, i0
 .endm
+#undef a2
+#undef a1
 
 g: ; g(i, t) -> t
 	#define tmp _
