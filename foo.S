@@ -114,7 +114,6 @@ mod3: ; mod3(Mh.Ml) -> t
 g: ; g(i, t) -> t
 	#define a1 x
 	#define a2 _
-	CLR	a2
 	CLR	a1
 
 	#define tmp _
@@ -132,6 +131,8 @@ g: ; g(i, t) -> t
 	LDI	Xlo, lo8(notes)
 	ADD	Xlo, t ; NOTE: can't overflow, since RAMEND == 0x5F
 	LD	t, X
+
+	CLR	a2
 
 	/* decision tree multiplication saves cycles and (hopefully) reduces code size
 	                     _xxx?
