@@ -9,8 +9,8 @@
 #define t    r23 //==Ml
 ;            r24
 ;            r25
-#define x    r26 //==Xlo==Mh
-#define _    r27 //==Xhi
+#define x    r26 //==Xlo==Mh==a1
+#define _    r27 //==Xhi==a2
 ;            r28
 ;            r29
 ;            r30 Zlo
@@ -18,7 +18,7 @@
 ; aliases:
 #define Xlo  r26
 #define Xhi  r27
-#define Ml   r24 //mod3 vars
+#define Ml   r23 //mod3 vars
 #define Mh   r26 // -"-
 
 /* I/O REGISTERS */
@@ -268,7 +268,6 @@ main: ; setup routine
 	LDI	x, 0x09
 	OUT	TCCR0B, x
 	OUT	TIMSK0, one ; enable tim0_ovf
-	OUT	TIFR0, one  ; TODO: why?
 	SEI
 	#undef one
 	#undef zero
@@ -281,6 +280,7 @@ loop:
 sample:
 	; potential TODO: softcounter in r25 to only update duty cicle every n iterations
 	; potential TODO: save/restore status register (SREG=0x3f) (only if something in mainloop)
+	; TODO: there is substantial jitter in the tim0_ovf interval -- are we clearing the interrupt flag correctly?
 
 	OUT	OCR0AL, acc ; start by outputting a sample, because routine has variable runtime
 	SBI	PORTB, 2 ; to measure runtime
@@ -437,5 +437,6 @@ sample:
 	SBCI	i3, -1
 
 	CBI	PORTB, 2 ; end runtime measurement
-	;TODO: to reduce jitter: clear pending tim0_ovf (TIFR0[TOV0] <- 1) ?
+	LDI	_, 1     ; NOTE: could use own register for speed
+	OUT	TIFR0, _ ; clear pending interrupt (routine takes two intr.cycles)
 	RETI ; reenables interrupts
