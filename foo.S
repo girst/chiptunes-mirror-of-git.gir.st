@@ -271,7 +271,6 @@ main: ; setup routine
 	SEI
 	#undef one
 	#undef zero
-	RJMP	sample
 
 loop:
 	SLEEP ; wait for interrupt
@@ -280,7 +279,6 @@ loop:
 sample:
 	; potential TODO: softcounter in r25 to only update duty cicle every n iterations
 	; potential TODO: save/restore status register (SREG=0x3f) (only if something in mainloop)
-	; TODO: there is substantial jitter in the tim0_ovf interval -- are we clearing the interrupt flag correctly?
 
 	OUT	OCR0AL, acc ; start by outputting a sample, because routine has variable runtime
 	SBI	PORTB, 2 ; to measure runtime
