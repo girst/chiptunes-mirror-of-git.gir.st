@@ -1,3 +1,4 @@
+; TODO: melody is still not 100% correct!
 /* REGISTER NAMES */
 #define acc  r16
 #define i0   r17
@@ -11,13 +12,15 @@
 #define _    r25 //==a2
 #define Xlo  r26
 #define Xhi  r27
-;            r28
+#define one  r28
 ;            r29
 ;            r30 Zlo
 ;            r31 Zhi
 ; aliases:
-#define Ml   r23 //mod3 vars
-#define Mh   r24 // -"-
+#define Ml t //mod3 vars
+#define Mh x // -"-
+#define a1 x //mul_ vars
+#define a2 _ // -"-
 
 /* I/O REGISTERS */
 OCR0AL = 0x26
@@ -81,8 +84,6 @@ mod3: ; mod3(Mh.Ml) -> t
 	#undef tmp
 
 ; definitions to mul-tree readable:
-#define a1 x
-#define a2 _
 .macro always _bit ; nop; for when a test() is not necessary (see tree)
 .endm
 .macro never _bit  ; nop; for when a test() is not necessary (see tree)
@@ -111,12 +112,8 @@ mod3: ; mod3(Mh.Ml) -> t
 .macro add8 ; ditto with carrying
 	ADD	a1, i0
 .endm
-#undef a2
-#undef a1
 
 g: ; g(i, t) -> t
-	#define a1 x
-	#define a2 _
 	CLR	a1
 
 	#define tmp _
@@ -238,19 +235,16 @@ g: ; g(i, t) -> t
 		LSR a1 ;final shift is a common operation for all
 
 	MOV	t, a1 ;;TODO: use a1 in loop: directly
-	#undef a1
-	#undef a2
-	RET ; TODO: replace CALL/RET with IJMP?
+	RET
 
 main: ; setup routine
 	; NOTE: clr i0..i2 moved to .ord 0x0
 	CLR	i3
 	CLR	acc ; we output a dummy sample before the actual first one
 	LDI	Xhi, hi8(FLASHM + notes) ; never changes
+	LDI	one, 1      ; mostly for clearing TIM0_OVF bit
 
 	#define zero i0
-	#define one _
-	LDI	one, 1
 	LDI	x, RAMEND
 	OUT	SPL, x      ; init stack ptr
 	OUT	SPH, zero   ; -"-
@@ -262,8 +256,7 @@ main: ; setup routine
 	OUT	CLKPSR, one ; clock prescaler 1/2 (4Mhz)
 	LDI	x, 0xa7     ; determined by trial-and-error (->PORTB2)
 	OUT	OSCCAL, x   ; set oscillator calibration
-	OUT	WDTCSR, zero; turn off watchdog ;;TODO: incomplete - see datasheet pg48
-	; OUT	SMCR, 2     ; sleep mode 'power down' ('idle' (default) has faster response time)
+	OUT	WDTCSR, zero; turn off watchdog
 
 	;set timer/counter0 to 8bit fastpwm, non-inverting, no prescaler
 	LDI	x, 0x81
@@ -272,7 +265,6 @@ main: ; setup routine
 	OUT	TCCR0B, x
 	OUT	TIMSK0, one ; enable tim0_ovf
 	SEI
-	#undef one
 	#undef zero
 
 loop:
@@ -280,11 +272,10 @@ loop:
 	RJMP	loop
 
 sample:
-	; potential TODO: softcounter in r25 to only update duty cicle every n iterations
-	; potential TODO: save/restore status register (SREG=0x3f) (only if something in mainloop)
-
 	OUT	OCR0AL, acc ; start by outputting a sample, because routine has variable runtime
+#ifdef DEBUG
 	SBI	PORTB, 2 ; to measure runtime
+#endif // DEBUG
 
 	MOV	n, i2
 	LSL	n
@@ -437,7 +428,8 @@ sample:
 	SBCI	i2, -1
 	SBCI	i3, -1
 
-	CBI	PORTB, 2 ; end runtime measurement
-	LDI	_, 1     ; TODO: could use own register for speed
-	OUT	TIFR0, _ ; clear pending interrupt (routine takes two intr.cycles)
+#ifdef DEBUG
+	CBI	PORTB, 2   ; end runtime measurement
+#endif // DEBUG
+	OUT	TIFR0, one ; clear pending interrupt (routine takes two intr.cycles)
 	RETI ; reenables interrupts
