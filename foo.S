@@ -30,6 +30,7 @@ SPL    = 0x3D
 SPH    = 0x3E
 CCP    = 0x3C
 CLKPSR = 0x36
+OSCCAL = 0x39
 WDTCSR = 0x31
 SMCR   = 0x3A
 TCCR0A = 0x2E
@@ -235,7 +236,7 @@ g: ; g(i, t) -> t
 	end_mul:
 		LSR a1 ;final shift is a common operation for all
 
-	MOV	t, a1 ;;TODO: use a1 in main() directly
+	MOV	t, a1 ;;TODO: use a1 in loop: directly
 	#undef a1
 	#undef a2
 	RET ; TODO: replace CALL/RET with IJMP?
@@ -259,6 +260,8 @@ main: ; setup routine
 	LDI	x, 0xd8
 	OUT	CCP, x      ; change protected ioregs
 	OUT	CLKPSR, one ; clock prescaler 1/2 (4Mhz)
+	LDI	x, 0xa7     ; determined by trial-and-error (->PORTB2)
+	OUT	OSCCAL, x   ; set oscillator calibration
 	OUT	WDTCSR, zero; turn off watchdog ;;TODO: incomplete - see datasheet pg48
 	; OUT	SMCR, 2     ; sleep mode 'power down' ('idle' (default) has faster response time)
 
