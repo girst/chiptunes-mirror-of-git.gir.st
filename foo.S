@@ -7,19 +7,17 @@
 #define n    r21
 #define s    r22
 #define t    r23 //==Ml
-;            r24
-;            r25
-#define x    r26 //==Xlo==Mh==a1
-#define _    r27 //==Xhi==a2
+#define x    r24 //==a1==Mh
+#define _    r25 //==a2
+#define Xlo  r26
+#define Xhi  r27
 ;            r28
 ;            r29
 ;            r30 Zlo
 ;            r31 Zhi
 ; aliases:
-#define Xlo  r26
-#define Xhi  r27
 #define Ml   r23 //mod3 vars
-#define Mh   r26 // -"-
+#define Mh   r24 // -"-
 
 /* I/O REGISTERS */
 OCR0AL = 0x26
@@ -37,17 +35,18 @@ TCCR0A = 0x2E
 TCCR0B = 0x2D
 TIMSK0 = 0x2B
 TIFR0  = 0x2A
-
-.section .data
-notes:
-	.byte 0x84, 0x9d, 0xb0, 0x69, 0x9d, 0x84, 0x69, 0x58
-	.byte 0x75, 0x8c, 0xb0, 0x69, 0x8c, 0x75, 0x69, 0x58
+RAMEND = 0x5F
+FLASHM = 0x4000
 
 .section .text
 .org 0x0000 ; RESET interrupt
 	RJMP	main
 .org 0x0008 ; TIM0_OVF interrupt
 	RJMP	sample
+
+notes:
+	.byte 0x84, 0x9d, 0xb0, 0x69, 0x9d, 0x84, 0x69, 0x58
+	.byte 0x75, 0x8c, 0xb0, 0x69, 0x8c, 0x75, 0x69, 0x58
 
 mod3: ; mod3(Mh.Ml) -> t
 	#define tmp _
@@ -128,7 +127,6 @@ g: ; g(i, t) -> t
 	#undef tmp
 
 	;TODO: check correctness!
-	LDI	Xhi, hi8(notes)  ; hi(notes) always zero, but still need to clear the register
 	LDI	Xlo, lo8(notes)
 	ADD	Xlo, t ; NOTE: can't overflow, since RAMEND == 0x5F
 	LD	t, X
@@ -247,11 +245,12 @@ main: ; setup routine
 	CLR	i2
 	CLR	i3
 	CLR	acc ; we output a dummy sample before the actual first one
+	LDI	Xhi, hi8(FLASHM + notes) ; never changes
 
 	#define zero i0
 	#define one _
 	LDI	one, 1
-	LDI	x, 0x5f ; RAMEND
+	LDI	x, RAMEND
 	OUT	SPL, x      ; init stack ptr
 	OUT	SPH, zero   ; -"-
 	OUT	PUEB, zero  ; disable pullups
@@ -438,6 +437,6 @@ sample:
 	SBCI	i3, -1
 
 	CBI	PORTB, 2 ; end runtime measurement
-	LDI	_, 1     ; NOTE: could use own register for speed
+	LDI	_, 1     ; TODO: could use own register for speed
 	OUT	TIFR0, _ ; clear pending interrupt (routine takes two intr.cycles)
 	RETI ; reenables interrupts
