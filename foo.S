@@ -40,6 +40,9 @@ FLASHM = 0x4000
 
 .section .text
 .org 0x0000 ; RESET interrupt
+	CLR	i0
+	CLR	i1
+	CLR	i2
 	RJMP	main
 .org 0x0008 ; TIM0_OVF interrupt
 	RJMP	sample
@@ -240,9 +243,7 @@ g: ; g(i, t) -> t
 	RET ; TODO: replace CALL/RET with IJMP?
 
 main: ; setup routine
-	CLR	i0
-	CLR	i1
-	CLR	i2
+	; NOTE: clr i0..i2 moved to .ord 0x0
 	CLR	i3
 	CLR	acc ; we output a dummy sample before the actual first one
 	LDI	Xhi, hi8(FLASHM + notes) ; never changes
