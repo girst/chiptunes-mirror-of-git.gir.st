@@ -13,7 +13,7 @@
 #define Xlo  r26
 #define Xhi  r27
 #define one  r28
-;            r29
+#define v34  r29 //voice 3/4 selector
 ;            r30 Zlo
 ;            r31 Zhi
 ; aliases:
@@ -54,6 +54,73 @@ notes:
 	.byte 0x84, 0x9d, 0xb0, 0x69, 0x9d, 0x84, 0x69, 0x58
 	.byte 0x75, 0x8c, 0xb0, 0x69, 0x8c, 0x75, 0x69, 0x58
 
+voice34a: ; voice34a(v34, i3.i2.i1) -> t
+	; first helper function for voice 3 and 4
+	MOV	Ml, i2
+	SWAP	Ml
+	ANDI	Ml, 0xf0
+	LSL	Ml
+	SBRS	v34, 1
+	LSL	Ml
+	#define tmp _
+	MOV	tmp, i1
+	LSR	tmp
+	LSR	tmp
+	SBRC	v34, 1
+	LSR	tmp
+	OR	Ml, tmp
+	#undef tmp
+	MOV	Mh, i3
+	SWAP	Mh
+	ANDI	Mh, 0xf0
+	LSL	Mh
+	SBRS	v34, 1
+	LSL	Mh
+	#define tmp _
+	MOV	tmp, i2
+	LSR	tmp
+	LSR	tmp
+	SBRC	v34, 1
+	LSR	tmp
+	OR	Mh, tmp
+	#undef tmp
+	RCALL	mod3
+	RET
+
+voice34b: ; voice34b(v34, t, x) -> acc
+	; second helper function for voice 3 and 4
+	; modifies _
+	RCALL	g
+	LSR	t
+	SBRC	v34, 1
+	LSR	t       ; only when /3
+	ANDI	t, 3
+	MOV	x, s
+	INC	x
+	#define tmp _
+	MOV	tmp, x
+	LSR	tmp
+	SBRC	v34, 1
+	LSR	tmp     ; only when /3
+	ADD	tmp, x
+	ROR	tmp
+	LSR	tmp
+	SBRS	v34, 1
+	LSR	tmp     ; only when /5
+	ADD	tmp, x
+	ROR	tmp
+	SBRC	v34, 1
+	LSR	tmp     ; only when /3
+	ADD	tmp, x
+	ROR	tmp
+	LSR	tmp
+	SBRS	v34, 1
+	LSR	tmp     ; only when /5
+	AND	t, tmp
+	#undef tmp
+	ADD	acc, t
+	RET
+
 mod3: ; mod3(Mh.Ml) -> t
 	#define tmp _
 	ADD	Ml, Mh
@@ -83,36 +150,6 @@ mod3: ; mod3(Mh.Ml) -> t
 	RET
 	#undef tmp
 
-; definitions to mul-tree readable:
-.macro always _bit ; nop; for when a test() is not necessary (see tree)
-.endm
-.macro never _bit  ; nop; for when a test() is not necessary (see tree)
-.endm
-.macro test _bit,_jmpto
-	SBRC	t, \_bit
-	RJMP	\_jmpto
-.endm
-.macro i_test _bit,_jmpto ; inverted test (for reordered 0x8_)
-	SBRS	t, \_bit
-	RJMP	\_jmpto
-.endm
-.macro shift16
-	LSR	a2
-	ROR	a1
-.endm
-.macro shift8 ; top three bits don't need to be corrrect, so save cycles by not carrying
-	LSR	a1
-.endm
-.macro shift0 ; nop; last shift is common
-.endm
-.macro add16
-	ADD	a1, i0
-	ADC	a2, i1
-.endm
-.macro add8 ; ditto with carrying
-	ADD	a1, i0
-.endm
-
 g: ; g(i, t) -> t
 	CLR	a1
 
@@ -132,106 +169,58 @@ g: ; g(i, t) -> t
 
 	CLR	a2
 
-	/* decision tree multiplication saves cycles and (hopefully) reduces code size
-	                     _xxx?
-	                 /           \
-	           _xx?0                _xx1?
-	             |                    |
-	           _x?00                _x?01
-	         /       \             /     \
-	    _?000         _?100      _?001    _?101
-	    /   \         /   \        |      /   \
-	 _0000 _1000   _0100 _1100   _1001 _0101 _1101
-	   |     |       |     |       |     |     |
-	  ...   ...     ...   ...     ...   ...   ...
-	   |     |       |     |       |     |     |
-	   B0    58     84    8C      69     75    9D   */
-		test	0, m____1
-	m____0:	shift16
-		never	1
-	m___00:	shift16
-		test	2, m__100
-	m__000:	shift16
-		test	3, m_1000
-	m_0000:	shift16
-		always	4
-		add16 $ shift16
-		always	5
-		add8 $ shift8
-		never	6
-		shift8
-		always	7
-		add8 $ shift0
-		RJMP	end_mul ; calc'd 0xb0
+	; begin of mulitiplication:
+		LSR t
+		BRCC skip1
+		ADD a1, i0
+		ADC a2, i1
+	skip1:
+		LSR a2
+		ROR a1
+		LSR t
+	;        BRCC skip2 -- this bit is always zero
+	;        ADD a1, i0
+	;        ADC a2, i1
+	;skip2:
+		LSR a2
+		ROR a1
+		LSR t
+		BRCC skip3
+		ADD a1, i0
+		ADC a2, i1
+	skip3:
+		LSR a2
+		ROR a1
+		LSR t
+		BRCC skip4
+		ADD a1, i0
+		ADC a2, i1
+	skip4:
+		LSR a2
+		ROR a1
+		LSR t
+		BRCC skip5
+		ADD a1, i0
+		ADC a2, i1
+	skip5:
+		LSR a2
+		ROR a1
+		LSR t
+		BRCC skip6	;sbrc t, NNN
+		ADD a1, i0
+	skip6:
+		LSR a1
+		LSR t
+		BRCC skip7
+		ADD a1, i0
+	skip7:
+		LSR a1
+		LSR t
+		BRCC skip8
+		ADD a1, i0
+	skip8:
+		LSR a1
 
-	m_1000:	add16 $ shift16
-		always	4
-		add16 $ shift16
-		never	5
-		shift8
-		always	6
-		add8 $ shift8
-		never	7
-		shift0
-		RJMP	end_mul ; calc'd 0x58
-
-	m__100:	add16 $ shift16
-		i_test	3, m_0100
-	m_1100:	add16
-	m_0100:	shift16
-		never	4
-		shift16
-		never	5
-		shift8
-		never	6
-		shift8
-		always	7
-		add8 $ shift0
-		RJMP	end_mul ; calc'd 0x8c / 0x84
-
-	m____1: add16 $ shift16
-		never	1
-	m___01:	shift16
-		test	2, m__101
-	m__001:	shift16
-		always	3
-	m_1001:	add16 $ shift16
-		never	4
-		shift16
-		always	5
-		add8 $ shift8
-		always	6
-		add8 $ shift8
-		never	7
-		shift0
-		RJMP	end_mul ; calc'd 0x69
-
-	m__101:	add16 $ shift16
-		test	3, m_1101
-	m_0101:	shift16
-		always	4
-		add16 $ shift16
-		always	5
-		add8 $ shift8
-		always	6
-		add8 $ shift8
-		never	7
-		shift0
-		RJMP	end_mul ; calc'd 0x75
-
-	m_1101:	add16 $ shift16
-		always	4
-		add16 $ shift16
-		never	5
-		shift8
-		never	6
-		shift8
-		always	7
-		add8 $ shift0
-		; calc'd 0x9d
-
-	end_mul:
-		LSR a1 ;final shift is a common operation for all
 
 	MOV	t, a1 ;;TODO: use a1 in loop: directly
 	RET
@@ -324,100 +313,18 @@ sample:
 	ADD	acc, t
 
 	; voice 3:
-	MOV	Ml, i2
-	SWAP	Ml
-	ANDI	Ml, 0xf0
-	LSL	Ml
-	#define tmp _
-	MOV	tmp, i1
-	LSR	tmp
-	LSR	tmp
-	LSR	tmp
-	OR	Ml, tmp
-	#undef tmp
-	MOV	Mh, i3
-	SWAP	Mh
-	ANDI	Mh, 0xf0
-	LSL	Mh
-	#define tmp _
-	MOV	tmp, i2
-	LSR	tmp
-	LSR	tmp
-	LSR	tmp
-	OR	Mh, tmp
-	#undef tmp
-	RCALL	mod3
+	LDI	v34, 3
+	RCALL	voice34a
 	ADD	t, n
-	RCALL	g
-	LSR	t
-	LSR	t
-	ANDI	t, 3
-	MOV	x, s
-	INC	x
-	#define tmp _
-	MOV	tmp, x
-	LSR	tmp
-	LSR	tmp
-	ADD	tmp, x
-	ROR	tmp
-	LSR	tmp
-	ADD	tmp, x
-	ROR	tmp
-	LSR	tmp
-	ADD	tmp, x
-	ROR	tmp
-	LSR	tmp
-	AND	t, tmp
-	#undef tmp
-	ADD	acc, t
+	RCALL	voice34b
 
 	; voice 4:
-	MOV	Ml, i2
-	SWAP	Ml
-	ANDI	Ml, 0xf0
-	LSL	Ml
-	LSL	Ml
-	#define tmp _
-	MOV	tmp, i1
-	LSR	tmp
-	LSR	tmp
-	OR	Ml, tmp
-	#undef tmp
-	MOV	Mh, i3
-	SWAP	Mh
-	ANDI	Mh, 0xf0
-	LSL	Mh
-	LSL	Mh
-	#define tmp _
-	MOV	tmp, i2
-	LSR	tmp
-	LSR	tmp
-	OR	Mh, tmp
-	#undef tmp
-	RCALL	mod3
+	LDI	v34, 4
+	RCALL	voice34a
 	SUB	t, n
 	NEG	t
 	SUBI	t, -8
-	RCALL	g
-	LSR	t
-	ANDI	t, 3
-	INC	s
-	#define tmp _
-	MOV	tmp, s
-	LSR	tmp
-	ADD	tmp, s
-	ROR	tmp
-	LSR	tmp
-	LSR	tmp
-	ADD	tmp, s
-	ROR	tmp
-	ADD	tmp, s
-	ROR	tmp
-	LSR	tmp
-	LSR	tmp
-	AND	t, tmp
-	#undef tmp
-	ADD	acc, t
+	RCALL	voice34b
 
 	SWAP	acc ; acc<<4, to be passed to OCR0AL
 

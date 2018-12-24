@@ -1,5 +1,5 @@
 .PHONY: all clean flash
-CHIP ?= 9
+CHIP ?= 4
 
 all: foo.elf
 
