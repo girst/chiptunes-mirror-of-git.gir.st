@@ -144,7 +144,7 @@ mod3: ; mod3(Mh.Ml) -> t
 	ANDI	Ml, 0x03
 	ADD	Ml, tmp
 	CPI	Ml, 3
-	BRPL	skip
+	BRCS	skip
 	SUBI	Ml, 3
 	skip:
 	RET
