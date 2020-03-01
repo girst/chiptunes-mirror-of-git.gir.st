@@ -1,4 +1,3 @@
-; TODO: melody is still not 100% correct!
 /* REGISTER NAMES */
 #define acc  r16
 #define i0   r17
@@ -77,7 +76,7 @@ mod3: ; mod3(Mh.Ml) -> t
 	ANDI	Ml, 0x03
 	ADD	Ml, tmp
 	CPI	Ml, 3
-	BRPL	skip
+	BRCS	skip
 	SUBI	Ml, 3
 	skip:
 	RET
