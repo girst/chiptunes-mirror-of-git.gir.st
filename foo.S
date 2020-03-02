@@ -82,36 +82,6 @@ mod3: ; mod3(Mh.Ml) -> t
 	RET
 	#undef tmp
 
-; definitions to mul-tree readable:
-.macro always _bit ; nop; for when a test() is not necessary (see tree)
-.endm
-.macro never _bit  ; nop; for when a test() is not necessary (see tree)
-.endm
-.macro test _bit,_jmpto
-	SBRC	t, \_bit
-	RJMP	\_jmpto
-.endm
-.macro i_test _bit,_jmpto ; inverted test (for reordered 0x8_)
-	SBRS	t, \_bit
-	RJMP	\_jmpto
-.endm
-.macro shift16
-	LSR	a2
-	ROR	a1
-.endm
-.macro shift8 ; top three bits don't need to be corrrect, so save cycles by not carrying
-	LSR	a1
-.endm
-.macro shift0 ; nop; last shift is common
-.endm
-.macro add16
-	ADD	a1, i0
-	ADC	a2, i1
-.endm
-.macro add8 ; ditto with carrying
-	ADD	a1, i0
-.endm
-
 g: ; g(i, t) -> t
 	CLR	a1
 
@@ -131,114 +101,57 @@ g: ; g(i, t) -> t
 
 	CLR	a2
 
-	/* decision tree multiplication:
-	   there is only a limited number of coefficients, so we heavily
-	   optimize for those only, and only compute the bits we
-	   actually need. this reduces cycle count from 38 for the
-	   (optimized) classic approach to 31. instruction count
-	   increases from 38 to 100. in the end it turned out that we
-	   would've had enough cycles to spare to just use the standard
-	   algorithm.
-	                     _xxx?
-	                 /           \
-	           _xx?0                _xx1?
-	             |                    |
-	           _x?00                _x?01
-	         /       \             /     \
-	    _?000         _?100      _?001    _?101
-	    /   \         /   \        |      /   \
-	 _0000 _1000   _0100 _1100   _1001 _0101 _1101
-	   |     |       |     |       |     |     |
-	  ...   ...     ...   ...     ...   ...   ...
-	   |     |       |     |       |     |     |
-	   B0    58     84    8C      69     75    9D
-	  27cy  28cy   26cy  28cy    26cy   31cy  30cy  */
-		test	0, m____1
-	m____0:	shift16
-		never	1
-	m___00:	shift16
-		test	2, m__100
-	m__000:	shift16
-		test	3, m_1000
-	m_0000:	shift16
-		always	4
-		add16 $ shift16
-		always	5
-		add8 $ shift8
-		never	6
-		shift8
-		always	7
-		add8 $ shift0
-		RJMP	end_mul ; calc'd 0xb0
-
-	m_1000:	add16 $ shift16
-		always	4
-		add16 $ shift16
-		never	5
-		shift8
-		always	6
-		add8 $ shift8
-		never	7
-		shift0
-		RJMP	end_mul ; calc'd 0x58
-
-	m__100:	add16 $ shift16
-		i_test	3, m_0100
-	m_1100:	add16
-	m_0100:	shift16
-		never	4
-		shift16
-		never	5
-		shift8
-		never	6
-		shift8
-		always	7
-		add8 $ shift0
-		RJMP	end_mul ; calc'd 0x8c / 0x84
-
-	m____1: add16 $ shift16
-		never	1
-	m___01:	shift16
-		test	2, m__101
-	m__001:	shift16
-		always	3
-	m_1001:	add16 $ shift16
-		never	4
-		shift16
-		always	5
-		add8 $ shift8
-		always	6
-		add8 $ shift8
-		never	7
-		shift0
-		RJMP	end_mul ; calc'd 0x69
-
-	m__101:	add16 $ shift16
-		test	3, m_1101
-	m_0101:	shift16
-		always	4
-		add16 $ shift16
-		always	5
-		add8 $ shift8
-		always	6
-		add8 $ shift8
-		never	7
-		shift0
-		RJMP	end_mul ; calc'd 0x75
-
-	m_1101:	add16 $ shift16
-		always	4
-		add16 $ shift16
-		never	5
-		shift8
-		never	6
-		shift8
-		always	7
-		add8 $ shift0
-		; calc'd 0x9d
-
-	end_mul:
-		LSR a1 ;final shift is a common operation for all
+	; begin of mulitiplication:
+		LSR t
+		BRCC skip1
+		ADD a1, i0
+		ADC a2, i1
+	skip1:
+		LSR a2
+		ROR a1
+		LSR t
+	;        BRCC skip2 -- this bit is always zero
+	;        ADD a1, i0
+	;        ADC a2, i1
+	;skip2:
+		LSR a2
+		ROR a1
+		LSR t
+		BRCC skip3
+		ADD a1, i0
+		ADC a2, i1
+	skip3:
+		LSR a2
+		ROR a1
+		LSR t
+		BRCC skip4
+		ADD a1, i0
+		ADC a2, i1
+	skip4:
+		LSR a2
+		ROR a1
+		LSR t
+		BRCC skip5
+		ADD a1, i0
+		ADC a2, i1
+	skip5:
+		LSR a2
+		ROR a1
+		LSR t
+		BRCC skip6	;sbrc t, NNN
+		ADD a1, i0
+	skip6:
+		LSR a1
+		LSR t
+		BRCC skip7
+		ADD a1, i0
+	skip7:
+		LSR a1
+		LSR t
+		BRCC skip8
+		ADD a1, i0
+	skip8:
+		LSR a1
 
 	MOV	t, a1 ;;TODO: use a1 in loop: directly
 	RET
