@@ -125,14 +125,20 @@ g: ; g(i, t) -> t
 	#undef zero
 	#undef tmp
 
-	;TODO: check correctness!
 	LDI	Xlo, lo8(notes)
 	ADD	Xlo, t ; NOTE: can't overflow, since RAMEND == 0x5F
 	LD	t, X
 
 	CLR	a2
 
-	/* decision tree multiplication saves cycles and (hopefully) reduces code size
+	/* decision tree multiplication:
+	   there is only a limited number of coefficients, so we heavily
+	   optimize for those only, and only compute the bits we
+	   actually need. this reduces cycle count from 38 for the
+	   (optimized) classic approach to 31. instruction count
+	   increases from 38 to 100. in the end it turned out that we
+	   would've had enough cycles to spare to just use the standard
+	   algorithm.
 	                     _xxx?
 	                 /           \
 	           _xx?0                _xx1?
@@ -145,7 +151,8 @@ g: ; g(i, t) -> t
 	   |     |       |     |       |     |     |
 	  ...   ...     ...   ...     ...   ...   ...
 	   |     |       |     |       |     |     |
-	   B0    58     84    8C      69     75    9D   */
+	   B0    58     84    8C      69     75    9D
+	  27cy  28cy   26cy  28cy    26cy   31cy  30cy  */
 		test	0, m____1
 	m____0:	shift16
 		never	1
