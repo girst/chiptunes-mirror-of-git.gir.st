@@ -37,17 +37,20 @@ TCCR0A = 0x2E
 TCCR0B = 0x2D
 TIMSK0 = 0x2B
 TIFR0  = 0x2A
+PCMSK  = 0x10
+PCIFR  = 0x11
+PCICR  = 0x12
+PRR    = 0x35
 RAMEND = 0x5F
 FLASHM = 0x4000
 
 .section .text
 .org 0x0000 ; RESET interrupt
 	CLR	i0
-.org 0x0002 ; INT0 external interrupt
-	CLR	i1
-.org 0x0004 ; PCINT0 pin change interrupt
-	CLR	i2
 	RJMP	main
+.org 0x0004 ; PCINT0 interrupt
+	CBI	PCICR, 0 ; disable interrupt
+	RJMP	pcint_handler
 .org 0x0008 ; TIM0_OVF interrupt
 	RJMP	sample
 
@@ -98,7 +101,7 @@ g: ; g(i, t) -> t
 	#undef tmp
 
 	LDI	Xlo, lo8(notes)
-	ADD	Xlo, t ; NOTE: can't overflow, since RAMEND == 0x5F
+	ADD	Xlo, t ; NOTE: notes are positioned so that hi8(notes) never changes
 	LD	t, X
 
 	CLR	a2
@@ -159,7 +162,9 @@ g: ; g(i, t) -> t
 	RET
 
 main: ; setup routine
-	; NOTE: clr i0..i2 moved to .ord 0x0
+	; NOTE: clr i0 moved to .ord 0x0
+	CLR	i1
+	CLR	i2
 	CLR	i3
 	CLR	acc ; we output a dummy sample before the actual first one
 	LDI	Xhi, hi8(FLASHM + notes) ; never changes
@@ -349,8 +354,9 @@ sample:
 	SBCI	i2, -1
 	SBCI	i3, -1
 
-	cpi i2, 0x78 ; 16m23 -- one loop
-	breq halt
+	CPI	i2, 0x78 ; 16m23 -- one loop
+	BREQ	halt
+continue:
 
 #ifdef DEBUG
 	CBI	PORTB, 2   ; end runtime measurement
@@ -369,42 +375,39 @@ sample:
 ;	oscillator to the 128kHz one, since power-down mode disables the clock
 ;	completely.
 
-; TODO: if we are using pcint on the audio-out pin, we could instruct the user to short the audio plug to ground to start playback. this would eliminate the button (and associated wiring) completely.
+; TODO: if we are using pcint on the audio-out pin, we could instruct the user to short the audio plug to ground to start playback (which should be triggered by a connected audio source). this would eliminate the button (and associated wiring) completely.
 
 halt:
 	;set all pins as input & enable pullups and disable periphials to conserve energy
-	ldi x, 0x00
-	out DDRB, x
-	ldi x, 0x0f
-	out PUEB, x
-	PRR = 0x35
-	ldi x, 0x3 ; bit0: disable Timer0, bit1: disable attiny5/10's ADC
-	out PRR, x
+	LDI	x, 0x00
+	OUT	DDRB, x
+	LDI	x, 0x0f
+	OUT	PUEB, x
+	LDI	x, 0x3 ; bit0: disable Timer0, bit1: disable attiny5/10's ADC
+	OUT	PRR, x
 
-#if 0
-	;enable (PC)INT0
-	EIMSK = 0x13
-	; EICRA(0x15)==00: generate INT0 on low level (default, can skip).
-	sbi EIMSK, 0 ; enable INT0
-	; TODO: the ISR should clear the interrupt raised flag, disable itself, reset DDRB/PUEB/PRR and RETI.
+	SBI	PCMSK, 0 ; enable PCINT0 on PB0 (pin1; also audio out)
+	SBI	PCICR, 0 ; enable PCINT0
 	
-	;EIFR(0x14): set to 1 to clear int0 flag
-
-	/* alternatively, using PCINT:
-	PCICR(0x12): set to 1 to enable pcint0
-	PCIFR(0x11): set to 1 to clear pcint0 flag
-	PCMSK(0x10): PCINT0 mask (lsb: portb0, msb: portb3)
-	*/
-#endif
-
 	;enter power-down-mode
-	ldi x, 0x05 ; power-down mode:____010_ ; enable:_______1
-	out SMCR, x
+	LDI	x, 0x05 ; power-down mode:____010_ ; enable:_______1
+	OUT	SMCR, x
+	CLR	x
 	SLEEP
-	; NOTE: at this point, only INT0, PCINT0 and RESET can wake up the MCU.
+	OUT	SMCR, x
 
-#if 0
-	;disable power-down-mode
-	clr x; xxx: should do before sleep-ing
-	out SMCR, x
-#endif
+	RJMP continue
+
+
+pcint_handler:
+	SBI	PCIFR, 0 ; clear interrupt
+	LDI	x, 0x05
+	OUT	DDRB, x
+	LDI	x, 0x00
+	OUT	PUEB, x
+	LDI	x, 0x02
+	OUT	PRR, x   ; reset prr (not using zero, so devices with adc keep it disabled)
+	; TODO: should probably reset i0/i1/i2
+	RETI
+
+; XXX: 14 byte too large; should probably purge i3, rerun fakeasm-tests with length reduced to 7864320. a dedicated five-register will save 2 instructions, too.
