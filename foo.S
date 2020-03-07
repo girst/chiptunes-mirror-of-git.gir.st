@@ -50,7 +50,7 @@ FLASHM = 0x4000
 	RJMP	main
 .org 0x0004 ; PCINT0 interrupt
 	CBI	PCICR, 0 ; disable interrupt
-	RJMP	pcint_handler
+	RJMP	wakeup
 .org 0x0008 ; TIM0_OVF interrupt
 	RJMP	sample
 
@@ -194,8 +194,45 @@ main: ; setup routine
 	#undef zero
 
 loop:
-	SLEEP ; wait for interrupt
+	CPI	i2, 0x78>>5 ; 16m23 -- one loop
+;TODO^: s/>>5//
+	BREQ	halt
+
+	SLEEP ; wait for interrupt -- XXX: does not work, since we forgot to set sleep_enable bit!
 	RJMP	loop
+
+halt:
+	CLR	i2          ; clear halt condition
+
+	#define zero i2
+	; disable periphials (timer0), then set all pins as input+pullup to conserve battery.
+	LDI	x, 0x3 ; could use one-register to save on ROM (would keep adc enabled on attiny5/10)
+	OUT	PRR, x
+	OUT	DDRB, zero
+	LDI	x, 0x0f
+	OUT	PUEB, x
+
+	SBI	PCMSK, 2    ; listen for pin change on the audio out pin (i.e. wake up when a audio sink is connected)
+;TODO^: s/2/0/
+	SBI	PCICR, 0    ; enable PCINT0
+
+	;enter power-down-mode
+	LDI	x, 0x05     ; sleep mode: power-down, enabled
+	OUT	SMCR, x
+	SLEEP
+	OUT	SMCR, one   ; sleep mode: idle, enabled
+
+	RJMP loop
+
+wakeup:
+	SBI	PCIFR, 0 ; clear interrupt
+	LDI	x, 0x05
+	OUT	DDRB, x
+	OUT	PUEB, zero
+	LDI	x, 0x02
+	OUT	PRR, x   ; not using zero, so devices with adc keep it disabled
+	RETI
+	#undef zero
 
 sample:
 	OUT	OCR0AL, acc ; start by outputting a sample, because routine has variable runtime
@@ -354,60 +391,8 @@ sample:
 	SBCI	i2, -1
 	SBCI	i3, -1
 
-	CPI	i2, 0x78 ; 16m23 -- one loop
-	BREQ	halt
-continue:
-
 #ifdef DEBUG
 	CBI	PORTB, 2   ; end runtime measurement
 #endif // DEBUG
 	OUT	TIFR0, one ; clear pending interrupt (routine takes two intr.cycles)
 	RETI ; reenables interrupts
-
-;	POWER SAVING MODE
-;
-;	To reduce physical size, we won't use a latching power switch. Instead,
-;	playback will stop after a full iteration (16m23s). Then, a momentary
-;	button will trigger a RESET, INT0 or PCINT0 interrupt to resume
-;	playback.  Meanwhile, all periphials will be shut down and the clock
-;	turned off. The watchdog is permanently off to reduce power consumption.
-;	Note: it is not necessary to switch the clock source from the 8MHz
-;	oscillator to the 128kHz one, since power-down mode disables the clock
-;	completely.
-
-; TODO: if we are using pcint on the audio-out pin, we could instruct the user to short the audio plug to ground to start playback (which should be triggered by a connected audio source). this would eliminate the button (and associated wiring) completely.
-
-halt:
-	;set all pins as input & enable pullups and disable periphials to conserve energy
-	LDI	x, 0x00
-	OUT	DDRB, x
-	LDI	x, 0x0f
-	OUT	PUEB, x
-	LDI	x, 0x3 ; bit0: disable Timer0, bit1: disable attiny5/10's ADC
-	OUT	PRR, x
-
-	SBI	PCMSK, 0 ; enable PCINT0 on PB0 (pin1; also audio out)
-	SBI	PCICR, 0 ; enable PCINT0
-	
-	;enter power-down-mode
-	LDI	x, 0x05 ; power-down mode:____010_ ; enable:_______1
-	OUT	SMCR, x
-	CLR	x
-	SLEEP
-	OUT	SMCR, x
-
-	RJMP continue
-
-
-pcint_handler:
-	SBI	PCIFR, 0 ; clear interrupt
-	LDI	x, 0x05
-	OUT	DDRB, x
-	LDI	x, 0x00
-	OUT	PUEB, x
-	LDI	x, 0x02
-	OUT	PRR, x   ; reset prr (not using zero, so devices with adc keep it disabled)
-	; TODO: should probably reset i0/i1/i2
-	RETI
-
-; XXX: 14 byte too large; should probably purge i3, rerun fakeasm-tests with length reduced to 7864320. a dedicated five-register will save 2 instructions, too.
