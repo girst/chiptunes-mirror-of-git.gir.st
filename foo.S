@@ -43,7 +43,9 @@ FLASHM = 0x4000
 .section .text
 .org 0x0000 ; RESET interrupt
 	CLR	i0
+.org 0x0002 ; INT0 external interrupt
 	CLR	i1
+.org 0x0004 ; PCINT0 pin change interrupt
 	CLR	i2
 	RJMP	main
 .org 0x0008 ; TIM0_OVF interrupt
@@ -347,8 +349,62 @@ sample:
 	SBCI	i2, -1
 	SBCI	i3, -1
 
+	cpi i2, 0x78 ; 16m23 -- one loop
+	breq halt
+
 #ifdef DEBUG
 	CBI	PORTB, 2   ; end runtime measurement
 #endif // DEBUG
 	OUT	TIFR0, one ; clear pending interrupt (routine takes two intr.cycles)
 	RETI ; reenables interrupts
+
+;	POWER SAVING MODE
+;
+;	To reduce physical size, we won't use a latching power switch. Instead,
+;	playback will stop after a full iteration (16m23s). Then, a momentary
+;	button will trigger a RESET, INT0 or PCINT0 interrupt to resume
+;	playback.  Meanwhile, all periphials will be shut down and the clock
+;	turned off. The watchdog is permanently off to reduce power consumption.
+;	Note: it is not necessary to switch the clock source from the 8MHz
+;	oscillator to the 128kHz one, since power-down mode disables the clock
+;	completely.
+
+; TODO: if we are using pcint on the audio-out pin, we could instruct the user to short the audio plug to ground to start playback. this would eliminate the button (and associated wiring) completely.
+
+halt:
+	;set all pins as input & enable pullups and disable periphials to conserve energy
+	ldi x, 0x00
+	out DDRB, x
+	ldi x, 0x0f
+	out PUEB, x
+	PRR = 0x35
+	ldi x, 0x3 ; bit0: disable Timer0, bit1: disable attiny5/10's ADC
+	out PRR, x
+
+#if 0
+	;enable (PC)INT0
+	EIMSK = 0x13
+	; EICRA(0x15)==00: generate INT0 on low level (default, can skip).
+	sbi EIMSK, 0 ; enable INT0
+	; TODO: the ISR should clear the interrupt raised flag, disable itself, reset DDRB/PUEB/PRR and RETI.
+	
+	;EIFR(0x14): set to 1 to clear int0 flag
+
+	/* alternatively, using PCINT:
+	PCICR(0x12): set to 1 to enable pcint0
+	PCIFR(0x11): set to 1 to clear pcint0 flag
+	PCMSK(0x10): PCINT0 mask (lsb: portb0, msb: portb3)
+	*/
+#endif
+
+	;enter power-down-mode
+	ldi x, 0x05 ; power-down mode:____010_ ; enable:_______1
+	out SMCR, x
+	SLEEP
+	; NOTE: at this point, only INT0, PCINT0 and RESET can wake up the MCU.
+
+#if 0
+	;disable power-down-mode
+	clr x; xxx: should do before sleep-ing
+	out SMCR, x
+#endif
