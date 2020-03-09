@@ -1,8 +1,15 @@
+//#define DEBUG
+#define CAL_MAGIC 0x9e   // attiny4 handwired
+//#define CAL_MAGIC 0x8d  // attiny4 devboard
+//#define CAL_MAGIC 0xa7 // attiny9 devboard
+
+
 /* REGISTER NAMES */
 #define acc  r16
 #define i0   r17
 #define i1   r18
 #define i2   r19
+; XXX: move registers down!
 #define n    r21
 #define s    r22
 #define t    r23 //==Ml
@@ -36,19 +43,17 @@ TCCR0A = 0x2E
 TCCR0B = 0x2D
 TIMSK0 = 0x2B
 TIFR0  = 0x2A
-PCMSK  = 0x10
-PCIFR  = 0x11
-PCICR  = 0x12
-PRR    = 0x35
+EIMSK  = 0x13
+EICRA  = 0x15
 RAMEND = 0x5F
 FLASHM = 0x4000
 
 .section .text
 .org 0x0000 ; RESET interrupt
-	CLR	i0
 	RJMP	main
-.org 0x0004 ; PCINT0 interrupt
-	CBI	PCICR, 0 ; disable interrupt
+.org 0x0002 ; INT0 interrupt
+	CBI	EIMSK, 0 ; disable interrupt
+	;TODO: can move 1 instruction here
 	RJMP	wakeup
 .org 0x0008 ; TIM0_OVF interrupt
 	RJMP	sample
@@ -100,7 +105,7 @@ g: ; g(i, t) -> t
 	#undef tmp
 
 	LDI	Xlo, lo8(notes)
-	ADD	Xlo, t ; NOTE: notes are positioned so that hi8(notes) never changes
+	ADD	Xlo, t
 	LD	t, X
 
 	CLR	a2
@@ -142,7 +147,7 @@ g: ; g(i, t) -> t
 		LSR a2
 		ROR a1
 		LSR t
-		BRCC skip6	;sbrc t, NNN
+		BRCC skip6
 		ADD a1, i0
 	skip6:
 		LSR a1
@@ -161,7 +166,7 @@ g: ; g(i, t) -> t
 	RET
 
 main: ; setup routine
-	; NOTE: clr i0 moved to .ord 0x0
+	CLR	i0
 	CLR	i1
 	CLR	i2
 	CLR	acc ; we output a dummy sample before the actual first one
@@ -173,12 +178,12 @@ main: ; setup routine
 	OUT	SPL, x      ; init stack ptr
 	OUT	SPH, zero   ; -"-
 	OUT	PUEB, zero  ; disable pullups
-	LDI	x, 0x05
-	OUT	DDRB, x     ; PORTB0:pwm, PORTB2:debug
+	LDI	x, 0x03
+	OUT	DDRB, x     ; PORTB0:pwm, PORTB1:debug (PORTB2:wakeup-input)
 	LDI	x, 0xd8
 	OUT	CCP, x      ; change protected ioregs
 	OUT	CLKPSR, one ; clock prescaler 1/2 (4Mhz)
-	LDI	x, 0xa7     ; determined by trial-and-error (->PORTB2)
+	LDI	x, CAL_MAGIC     ; determined by trial-and-error (->PORTB1)
 	OUT	OSCCAL, x   ; set oscillator calibration
 	OUT	WDTCSR, zero; turn off watchdog
 
@@ -192,60 +197,61 @@ main: ; setup routine
 	#undef zero
 
 loop:
-	CPI	i2, 0x78>>5 ; 16m23 -- one loop
-;TODO^: s/>>5//
+	CPI	i2, 0x78    ; 16m23 -- one loop
+;cpi i2, 1 ;TODO:removeme
 	BREQ	halt
 
 	SLEEP
 	RJMP	loop
 
+//we use an external pullup(>= 1kohm), as line-input usually has an impedance
+//between 20-100kohm, while the attiny's internal pullups are "only" 20-50kohm
+//(which is too strong)
 halt:
+	;stop the music, and check whether PINB0 is plugged into an audio
+	;sink. Until then, conserve as much battery as possible.
 	CLR	i2          ; clear halt condition
 
 	#define zero i2
-	; disable timer0, set all pins as input+pullup to conserve battery.
-	LDI	x, 0x08     ; disable timer clock
-	OUT	TCCR0B, x
-	;OUT	PRR, one ; §8.3: only helps in idle and active modes
+	OUT	TCCR0A, zero   ; https://www.avrfreaks.net/forum/oc1a-state-during-pwm-disable
+	OUT	TCCR0B, zero   ; disable timer to free audio pin for wakeup function
 
+	;TODO: both of these necessary?
+	SBI	PORTB, 0    ; assert high level on pin2, so we can detect a plugged-in state as a low level.
+	SBI	PORTB, 2    ; assert high level on pin2, so we can detect a plugged-in state as a low level.
 
-sbi PORTB, 0 ; force pin high, so pcint triggers on connect to ground --- XXX TODO: this does not work reliably for PORTB0
-sbi PORTB, 2 ; force pin high, so pcint triggers on connect to ground (works reliably for portb2)
+	OUT	DDRB, zero  ; set all pins as input
+	;;;OUT	PUEB, zero     ; disable pullups on all pins (already done @ init/main)
 
-
-	OUT	DDRB, zero
-	LDI	x, 0x0f
-	OUT	PUEB, x
-
-
-
-	SBI	PCMSK, 2    ; listen for pin change on the audio out pin (i.e. wake up when a audio sink is connected)
-;TODO^: s/2/0/
-	OUT	PCICR, one  ; enable PCINT0
+	;set up INT0 to wake up when a audio sink is connected
+	SBI	EIMSK, 0     ; set-bit-0 high => enable interrupt
+	OUT	EICRA, zero  ; logical low generates INT0
 
 	;enter power-down-mode
 	LDI	x, 0x05     ; sleep mode: power-down, enabled
 	OUT	SMCR, x
 	SLEEP
-	OUT	SMCR, one   ; sleep mode: idle, enabled
+	;OUT	SMCR, one   ; sleep mode: idle, enabled
+	OUT	SMCR, zero  ; sleep mode: disabled
 
 	RJMP loop
 
 wakeup:
-	SBI	PCIFR, 0 ; clear interrupt
-	OUT	PUEB, zero ; remove pullups
-	LDI	x, 0x05 ; restore output pins
+	;;;SBI	PCIFR, 1    ; clear interrupt (handled by reti)
+	;;;OUT	PUEB, zero  ; remove pullups (already in main)
+	LDI	x, 0x03     ; restore output pins
 	OUT	DDRB, x
-	;OUT	PRR, zero ; reenable periphials
+	LDI	x, 0x81
+	OUT	TCCR0A, x   ; reenable COMA bits
 	LDI	x, 0x09
-	OUT	TCCR0B, x ; reenable timer0
+	OUT	TCCR0B, x   ; reenable timer0
 	RETI
 	#undef zero
 
 sample:
 	OUT	OCR0AL, acc ; start by outputting a sample, because routine has variable runtime
 #ifdef DEBUG
-	SBI	PORTB, 2 ; to measure runtime
+	SBI	PORTB, 1 ; to measure runtime
 #endif // DEBUG
 
 	MOV	n, i2
@@ -377,7 +383,7 @@ sample:
 	SBCI	i2, -1
 
 #ifdef DEBUG
-	CBI	PORTB, 2   ; end runtime measurement
+	CBI	PORTB, 1   ; end runtime measurement
 #endif // DEBUG
 	OUT	TIFR0, one ; clear pending interrupt (routine takes two intr.cycles)
 	RETI ; reenables interrupts
