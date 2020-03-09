@@ -198,23 +198,32 @@ loop:
 ;TODO^: s/>>5//
 	BREQ	halt
 
-	SLEEP ; wait for interrupt -- XXX: does not work, since we forgot to set sleep_enable bit!
+	SLEEP
 	RJMP	loop
 
 halt:
 	CLR	i2          ; clear halt condition
 
 	#define zero i2
-	; disable periphials (timer0), then set all pins as input+pullup to conserve battery.
-	LDI	x, 0x3 ; could use one-register to save on ROM (would keep adc enabled on attiny5/10)
-	OUT	PRR, x
+	; disable timer0, set all pins as input+pullup to conserve battery.
+	LDI	x, 0x08     ; disable timer clock
+	OUT	TCCR0B, x
+	;OUT	PRR, one ; §8.3: only helps in idle and active modes
+
+
+sbi PORTB, 0 ; force pin high, so pcint triggers on connect to ground --- XXX TODO: this does not work reliably for PORTB0
+sbi PORTB, 2 ; force pin high, so pcint triggers on connect to ground (works reliably for portb2)
+
+
 	OUT	DDRB, zero
 	LDI	x, 0x0f
 	OUT	PUEB, x
 
+
+
 	SBI	PCMSK, 2    ; listen for pin change on the audio out pin (i.e. wake up when a audio sink is connected)
 ;TODO^: s/2/0/
-	SBI	PCICR, 0    ; enable PCINT0
+	OUT	PCICR, one  ; enable PCINT0
 
 	;enter power-down-mode
 	LDI	x, 0x05     ; sleep mode: power-down, enabled
@@ -226,11 +235,12 @@ halt:
 
 wakeup:
 	SBI	PCIFR, 0 ; clear interrupt
-	LDI	x, 0x05
+	OUT	PUEB, zero ; remove pullups
+	LDI	x, 0x05 ; restore output pins
 	OUT	DDRB, x
-	OUT	PUEB, zero
-	LDI	x, 0x02
-	OUT	PRR, x   ; not using zero, so devices with adc keep it disabled
+	;OUT	PRR, zero ; reenable periphials
+	LDI	x, 0x09
+	OUT	TCCR0B, x ; reenable timer0
 	RETI
 	#undef zero
 
