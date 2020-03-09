@@ -3,7 +3,6 @@
 #define i0   r17
 #define i1   r18
 #define i2   r19
-#define i3   r20
 #define n    r21
 #define s    r22
 #define t    r23 //==Ml
@@ -165,7 +164,6 @@ main: ; setup routine
 	; NOTE: clr i0 moved to .ord 0x0
 	CLR	i1
 	CLR	i2
-	CLR	i3
 	CLR	acc ; we output a dummy sample before the actual first one
 	LDI	Xhi, hi8(FLASHM + notes) ; never changes
 	LDI	one, 1      ; mostly for clearing TIM0_OVF bit
@@ -261,15 +259,8 @@ sample:
 	LSR	tmp
 	OR	n, tmp
 	#undef tmp
-	MOV	s, i3
+	MOV	s, i2
 	LSR	s
-	ROR	s
-	ANDI	s, 0x80
-	#define tmp _
-	MOV	tmp, i2
-	LSR	tmp
-	OR	s, tmp
-	#undef tmp
 
 	; voice 1:
 	MOV	t, n
@@ -310,17 +301,10 @@ sample:
 	LSR	tmp
 	OR	Ml, tmp
 	#undef tmp
-	MOV	Mh, i3
-	SWAP	Mh
-	ANDI	Mh, 0xf0
-	LSL	Mh
-	#define tmp _
-	MOV	tmp, i2
-	LSR	tmp
-	LSR	tmp
-	LSR	tmp
-	OR	Mh, tmp
-	#undef tmp
+	MOV	Mh, i2
+	LSR	Mh
+	LSR	Mh
+	LSR	Mh
 	RCALL	mod3
 	ADD	t, n
 	RCALL	g
@@ -358,17 +342,9 @@ sample:
 	LSR	tmp
 	OR	Ml, tmp
 	#undef tmp
-	MOV	Mh, i3
-	SWAP	Mh
-	ANDI	Mh, 0xf0
-	LSL	Mh
-	LSL	Mh
-	#define tmp _
-	MOV	tmp, i2
-	LSR	tmp
-	LSR	tmp
-	OR	Mh, tmp
-	#undef tmp
+	MOV	Mh, i2
+	LSR	Mh
+	LSR	Mh
 	RCALL	mod3
 	SUB	t, n
 	NEG	t
@@ -399,7 +375,6 @@ sample:
 	SUBI	i0, -1
 	SBCI	i1, -1
 	SBCI	i2, -1
-	SBCI	i3, -1
 
 #ifdef DEBUG
 	CBI	PORTB, 2   ; end runtime measurement
