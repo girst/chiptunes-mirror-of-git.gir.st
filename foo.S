@@ -53,7 +53,6 @@ FLASHM = 0x4000
 	RJMP	main
 .org 0x0002 ; INT0 interrupt
 	CBI	EIMSK, 0 ; disable interrupt
-	;TODO: can move 1 instruction here
 	RJMP	wakeup
 .org 0x0008 ; TIM0_OVF interrupt
 	RJMP	sample
@@ -198,7 +197,6 @@ main: ; setup routine
 
 loop:
 	CPI	i2, 0x78    ; 16m23 -- one loop
-;cpi i2, 1 ;TODO:removeme
 	BREQ	halt
 
 	SLEEP
@@ -213,32 +211,32 @@ halt:
 	CLR	i2          ; clear halt condition
 
 	#define zero i2
-	OUT	TCCR0A, zero   ; https://www.avrfreaks.net/forum/oc1a-state-during-pwm-disable
-	OUT	TCCR0B, zero   ; disable timer to free audio pin for wakeup function
+	; disable timer to free audio pin for wakeup function:
+	OUT	TCCR0A, zero
+	OUT	TCCR0B, zero
 
-	;TODO: both of these necessary?
-	SBI	PORTB, 0    ; assert high level on pin2, so we can detect a plugged-in state as a low level.
-	SBI	PORTB, 2    ; assert high level on pin2, so we can detect a plugged-in state as a low level.
+	#define five x
+	LDI	x, 0x05
+
+	;assert high level on pullup pins to avoid accidentally triggering INT0:
+	OUT	PORTB, five
 
 	OUT	DDRB, zero  ; set all pins as input
-	;;;OUT	PUEB, zero     ; disable pullups on all pins (already done @ init/main)
 
 	;set up INT0 to wake up when a audio sink is connected
-	SBI	EIMSK, 0     ; set-bit-0 high => enable interrupt
-	OUT	EICRA, zero  ; logical low generates INT0
+	SBI	EIMSK, 0    ; set-bit-0 high => enable interrupt
+	OUT	EICRA, zero ; logical low generates INT0
 
 	;enter power-down-mode
-	LDI	x, 0x05     ; sleep mode: power-down, enabled
-	OUT	SMCR, x
+	OUT	SMCR, five  ; sleep mode: power-down, enabled
 	SLEEP
 	;OUT	SMCR, one   ; sleep mode: idle, enabled
 	OUT	SMCR, zero  ; sleep mode: disabled
+	#undef five
 
 	RJMP loop
 
 wakeup:
-	;;;SBI	PCIFR, 1    ; clear interrupt (handled by reti)
-	;;;OUT	PUEB, zero  ; remove pullups (already in main)
 	LDI	x, 0x03     ; restore output pins
 	OUT	DDRB, x
 	LDI	x, 0x81
