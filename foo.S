@@ -9,23 +9,21 @@
 #define i0   r17
 #define i1   r18
 #define i2   r19
-; XXX: move registers down!
-#define n    r21
-#define s    r22
-#define t    r23 //==Ml
-#define x    r24 //==a1==Mh
-#define _    r25 //==a2
+#define n    r20
+#define s    r21
+#define t    r22 //==Ml
+#define x    r23 //==a1==Mh
+#define _    r24 //==a2
+#define one  r25
 #define Xlo  r26
 #define Xhi  r27
-#define one  r28
+;            r28
 ;            r29
 ;            r30 Zlo
 ;            r31 Zhi
 ; aliases:
 #define Ml t //mod3 vars
 #define Mh x // -"-
-#define a1 x //mul_ vars
-#define a2 _ // -"-
 
 /* I/O REGISTERS */
 OCR0AL = 0x26
@@ -91,6 +89,8 @@ mod3: ; mod3(Mh.Ml) -> t
 	#undef tmp
 
 g: ; g(i, t) -> t
+	#define a1 x
+	#define a2 _
 	CLR	a1
 
 	#define tmp _
@@ -162,6 +162,8 @@ g: ; g(i, t) -> t
 		LSR a1
 
 	MOV	t, a1 ;;TODO: use a1 in loop: directly
+	#undef a1
+	#undef a2
 	RET
 
 main: ; setup routine
