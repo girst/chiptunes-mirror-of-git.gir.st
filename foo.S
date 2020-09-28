@@ -1,7 +1,8 @@
-//#define DEBUG
-#define CAL_MAGIC 0x9e   // attiny4 handwired
+#define DEBUG
+#define CAL_MAGIC 0x91   // attiny4 flex-lowpass 1
+//#define CAL_MAGIC 0x9e   // attiny4 handwired
 //#define CAL_MAGIC 0x8d  // attiny4 devboard
-//#define CAL_MAGIC 0xa7 // attiny9 devboard
+//#define CAL_MAGIC 0xa9 // attiny9 devboard
 
 
 /* REGISTER NAMES */
@@ -82,7 +83,7 @@ mod3: ; mod3(Mh.Ml) -> t
 	ANDI	Ml, 0x03
 	ADD	Ml, tmp
 	CPI	Ml, 3
-	BRCS	skip
+	BRMI	skip
 	SUBI	Ml, 3
 	skip:
 	RET
